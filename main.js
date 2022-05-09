@@ -3,7 +3,6 @@ const morgan = require('morgan')
 
 // Routers
 
-
 ;(async () => {
     const app = express()
     app.use(morgan('tiny'))
