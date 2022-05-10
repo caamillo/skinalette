@@ -30,6 +30,7 @@ function rgbToHex(r, g, b) {
         getPixels('./public/img/test.png', (err,pixels) => {
             if (err) return console.log(err)
             for(let i = 0; i < pixels.shape[0]; i++){
+                pixelLoop:
                 for(let j = 0; j < pixels.shape[1]; j++){
                     const color = []
                     for(let k = 0; k < 4; k++) {
@@ -40,9 +41,12 @@ function rgbToHex(r, g, b) {
                         color[1],
                         color[2]
                     )
-                    if (!(colors.includes(hex)) && color[3] != 0) colors.push(hex)
+                    for (let clr of colors) if (clr[0] === hex) {clr[1]++; continue pixelLoop}
+                    if (!(colors.includes(hex)) && color[3] != 0) colors.push([hex,0])
                 }
             }
+            colors.sort((a,b) => b[1] - a[1])
+            for (let clr of colors) clr.splice(1,1)
             res.render('colors', { colors: Buffer.from(JSON.stringify(colors)).toString('base64') })
         })
     })
