@@ -40,7 +40,7 @@ function rgbToHex(r, g, b) {
                         color[1],
                         color[2]
                     )
-                    if (!(colors.includes(hex))) colors.push(hex)
+                    if (!(colors.includes(hex)) && color[3] != 0) colors.push(hex)
                 }
             }
             res.json(colors)
