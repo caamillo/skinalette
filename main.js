@@ -1,6 +1,7 @@
 const express = require("express")
 const morgan = require('morgan')
-const getPixels = require('get-pixels')
+const getPixels = require('get-pixels');
+const { SkinViewer } = require("skinview3d");
 
 function componentToHex(c) {
     var hex = c.toString(16);

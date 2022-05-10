@@ -31,7 +31,8 @@
     "morgan": "^1.10.0",
     "postcss": "^8.4.13",
     "postcss-cli": "^9.1.0",
-    "replace-color": "^2.3.0"
+    "replace-color": "^2.3.0",
+    "skinview3d": "^2.2.1"
   },
   "devDependencies": {
     "postcss-import": "^14.1.0",
