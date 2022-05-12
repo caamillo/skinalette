@@ -1,10 +1,8 @@
 import { useEffect, useState } from 'react';
-import logo from './logo.svg'
-import Color from './Color'
-import './App.css';
-import './compiled.css'
 import skin from './img/test.png'
 import pixels from 'image-pixels'
+import Color from './Color'
+import './compiled.css'
 
 function componentToHex(c) {
     var hex = c.toString(16);
