@@ -3,6 +3,7 @@ import './App.css';
 import './compiled.css'
 import skin from './img/test.png'
 import pixels from 'image-pixels'
+import { useAsync } from "react-async"
 
 function componentToHex(c) {
     var hex = c.toString(16);
@@ -14,7 +15,10 @@ function rgbToHex(r, g, b) {
 }
 
 function App() { 
+    <Async promiseFn={pixels} o={skin}>
+    const test = useAsync({ promiseFn: pixels, skin })
     const colors = []
+    </Async>
     pixels(skin).then((image) => {
         // console.log(image)
         for(let i = 0; i < image.height; i++){
@@ -39,22 +43,22 @@ function App() {
         //  res.render('colors', { colors: Buffer.from(JSON.stringify(colors)).toString('base64') })
     })
     return (
-        <div className="App">
-            <header className="App-header">
-                <img src={logo} className="App-logo" alt="logo" />
-                <p>
-                    Edit <code>src/App.js</code> and save to reload.
-                </p>
-                <a
-                className="App-link"
-                href="https://reactjs.org"
-                target="_blank"
-                rel="noopener noreferrer"
-                >
-                    Learn React
-                </a>
-            </header>
-        </div>
+            <div className="App">
+                <header className="App-header">
+                    <img src={logo} className="App-logo" alt="logo" />
+                    <p>
+                        Edit <code>src/App.js</code> and save to reload.
+                    </p>
+                    <a
+                    className="App-link"
+                    href="https://reactjs.org"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    >
+                        Learn React
+                    </a>
+                </header>
+            </div>
     );
 }
 
