@@ -1,7 +1,15 @@
+// Hooks
 import { useEffect, useState } from 'react';
+
+// Media
 import skin from './img/test.png'
+
+// NPM
 import pixels from 'image-pixels'
 import Color from './components/Color'
+import Skinview3d from "react-skinview3d"
+
+// Tailwind
 import './tailwind/compiled.css'
 
 function componentToHex(c) {
@@ -50,19 +58,25 @@ function App() {
         getPixels()
     }, [])
 
+    // console.log(Skinview3d)
+
     return (
         <div id="container">
             <nav className="relative container mx-auto p-6">
                 <div className="flex items-center justify-between">
                     <div className="text-3xl text-blurple font-radiocanada font-semibold">Skinalette</div>
                     <div className="hidden space-x-6 text-blurple font-radiocanada md:flex md:justify-end">
-                        <a class="hover:text-lightblurple" href="#">Home</a>
-                        <a class="hover:text-lightblurple" href="#">Changer</a>
+                        <a className="hover:text-lightblurple" href="#">Home</a>
+                        <a className="hover:text-lightblurple" href="#">Changer</a>
                     </div>
                 </div>
             </nav>
             <div className="w-full border-t" style={{"borderColor":"#736CED"}}></div>
-            <section id="home"></section>
+            <section id="home">
+                <div id="test">
+                    <Skinview3d skinUrl={skin} height = "500" width = "500" />
+                </div>
+            </section>
             <section id="changer"></section>
             <section id="about"></section>
         </div>
