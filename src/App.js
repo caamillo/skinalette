@@ -1,16 +1,16 @@
 import { useEffect, useState } from 'react';
 import skin from './img/test.png'
 import pixels from 'image-pixels'
-import Color from './Color'
-import './compiled.css'
+import Color from './components/Color'
+import './tailwind/compiled.css'
 
 function componentToHex(c) {
     var hex = c.toString(16);
     return hex.length === 1 ? "0" + hex : hex;
 }
 
-function rgbToHex(r, g, b) {
-    return "#" + componentToHex(r) + componentToHex(g) + componentToHex(b);
+function rgbToHex(color) {
+    return "#" + componentToHex(color[0]) + componentToHex(color[1]) + componentToHex(color[2]);
 }
 
 function App() { 
@@ -25,14 +25,13 @@ function App() {
                 pixelLoop:
                 for(let j = 0; j < image.width; j++){
                     const color = []
+
                     for(let k = 0; k < 4; k++) {
                         color.push(image.data[(i * image.width + j) * 4 + k])
                     }
-                    const hex = rgbToHex(
-                        color[0],
-                        color[1],
-                        color[2]
-                    )
+
+                    const hex = rgbToHex(color)
+
                     for (let clr of colors) if (clr[0] === hex) {clr[1]++; continue pixelLoop}
                     if (!(colors.includes(hex)) && color[3] != 0) colors.push([hex,0])
                 }
