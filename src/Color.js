@@ -1,10 +1,13 @@
 const Color = (props) => {
     return(
-        <div style={{
+        <div style = {{
             width: '100px',
             height: '100px',
             backgroundColor: props.color
-        }}></div>
+        }}
+        key = {
+            props.key
+        }></div>
     )
 }
 

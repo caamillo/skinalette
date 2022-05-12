@@ -40,20 +40,34 @@ function App() {
                 }
             }
             colors.sort((a,b) => b[1] - a[1])
-            for (let clr of colors) clr.splice(1,1)
+
             const colorsd = []
-            for (let clr of colors) colorsd.push(<Color color = {clr} />)
-            console.log(colorsdiv)
+
+            for (let clr of colors) colorsd.push(<Color color = {clr[0]} />)
+
+            console.log(colorsd)
+            
             setColors(colors)
             setColorsDiv(colorsd)
         }
         getPixels()
     }, [])
-    // console.log(colors)
-    //  res.render('colors', { colors: Buffer.from(JSON.stringify(colors)).toString('base64') })
+
     return (
-        <div id="colors" className="flex items-center justify-center">
-            { colorsdiv }
+        <div id="container">
+            <nav className="relative container mx-auto p-6">
+                <div className="flex items-center justify-between">
+                    <div className="text-3xl text-blurple font-radiocanada font-semibold">Skinalette</div>
+                    <div className="hidden space-x-6 text-blurple font-radiocanada md:flex md:justify-end">
+                        <a class="hover:text-lightblurple" href="#">Home</a>
+                        <a class="hover:text-lightblurple" href="#">Changer</a>
+                    </div>
+                </div>
+            </nav>
+            <div className="w-full border-t" style={{"borderColor":"#736CED"}}></div>
+            <section id="home"></section>
+            <section id="changer"></section>
+            <section id="about"></section>
         </div>
     );
 }
