@@ -1,13 +1,13 @@
-const Color = (props) => {
+const Color = ({color, id}) => {
     return(
-        <div style = {{
-            width: '100px',
-            height: '100px',
-            backgroundColor: props.color
+        <div
+        className="color"
+        style = {{
+            width: '50px',
+            height: '50px',
+            backgroundColor: color
         }}
-        key = {
-            props.key
-        }></div>
+        key = { id }></div>
     )
 }
 

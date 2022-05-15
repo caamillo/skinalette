@@ -33,9 +33,6 @@ function App() {
 
     const [colors, setColors] = useState([])
     const [colorsdiv, setColorsDiv] = useState([])
-    const colorElements = []
-
-    for (let i = 0; i < 20; i++) colorElements.push(<div className='color w-[50px] h-[50px] bg-blurple'></div>)
 
     useEffect(() => {
         async function getPixels(){
@@ -59,7 +56,7 @@ function App() {
 
             const colorsd = []
 
-            for (let clr of colors) colorsd.push(<Color color = {clr[0]} />)
+            for (let i = 0; i < colors.length; i++) colorsd.push(<Color color = {colors[i][0]} key = {i} />)
 
             console.log(colorsd)
             
@@ -96,7 +93,7 @@ function App() {
                             </div>
                             <div className='colors overflow-auto max-h-[250px]'>
                                 <div className="grid grid-cols-3 gap-2 mr-5 child:border-2 child:border-blurple child:rounded-md">
-                                    { colorElements }
+                                    { colorsdiv }
                                 </div>
                             </div>
                         </div>
