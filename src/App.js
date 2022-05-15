@@ -1,6 +1,10 @@
 // Hooks
 import { useEffect, useState } from 'react';
 
+// CSS
+import './css/scrollbar.css'
+import './css/menu.css'
+
 // Media
 import inputSkin from './img/input.png'
 import outputSkin from './img/output.png'
@@ -52,7 +56,7 @@ function App() {
 
             const colorsd = []
 
-            for (let clr of colors) colorsd.push(<Color color = {clr[0]} />)
+            for (let i = 0; i < colors.length; i++) colorsd.push(<Color color = {colors[i][0]} key = {i} />)
 
             console.log(colorsd)
             
@@ -76,28 +80,24 @@ function App() {
                 </div>
             </nav>
             <section id="home" className='flex items-center justify-center w-screen h-screen'>
-                <div className="cards space-y-6 w-[80vw] child:w-[80vw] child:md:w-auto md:w-auto md:space-y-0 md:space-x-6">
-                    <div id="fromcard" className='flex mx-auto border-2 rounded border-blurple child:w-[100vw] child:md:w-auto md:inline-block'>
+                    <div id="skincard" className='border-2 rounded border-blurple'>
                         <div className="content flex items-center">
-                            <div className="avatar child:w-[50vw] child:h-[50vw] child:md:w-[300px] child:md:h-auto">
-                                <Skinview3d skinUrl = { inputSkin } height = "300" width = "300" />
-                            </div>
-                            <div className="desc mb-15 mr-8">
-                                <div className="title text-blurple font-semibold font-radiocanada text-[6vw] md:text-3xl">
-                                    <span>Imported</span>
+                            <div className="avatar">
+                                <div className="render">
+                                    <Skinview3d skinUrl = { inputSkin } height = "300" width = "300" />
                                 </div>
-                                <button type="button">Select</button>
+                                <div className="change flex items-center justify-center mb-5 space-x-2">
+                                    <button className='border-2 border-blurple p-1 px-5 text-blurple rounded-md font-radiocanada font-semibold'>Change</button>
+                                    <button className='border-2 border-blurple p-1 px-3 text-snow bg-blurple rounded-md font-radiocanada font-semibold'>Download</button>
+                                </div>
+                            </div>
+                            <div className='colors overflow-auto max-h-[250px]'>
+                                <div className="grid grid-cols-3 gap-2 mr-5 child:border-2 child:border-blurple child:rounded-md">
+                                    { colorsdiv }
+                                </div>
                             </div>
                         </div>
                     </div>
-                    <div id="tocard" className='flex mx-auto justify-center border-2 rounded border-blurple md:inline-block'>
-                        <div className="content flex items-center">
-                            <div className="avatar child:w-[50vw] child:h-[50vw] child:md:w-[300px] child:md:h-auto">
-                                <Skinview3d skinUrl = { outputSkin } height = "300" width = "300" />
-                            </div>
-                        </div>
-                    </div>
-                </div>
             </section>
         </div>
     );
