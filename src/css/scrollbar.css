@@ -1,0 +1,13 @@
+.colors::-webkit-scrollbar
+{
+	width: 13px;
+}
+
+.colors::-webkit-scrollbar-thumb
+{
+	border-radius: 10px;
+	background-color: #736CED;
+	border: 4px solid rgba(0, 0, 0, 0);
+	background-clip: padding-box;
+ 	border-radius: 9999px;
+}
