@@ -1,4 +1,9 @@
-Home
-Cards
-Merge Palettes
-Repeat Types: Repeat, Repeat All, and No Repeat, provare a fare che trova pure colori complementari nel merge (da fare check)
+CSS:
+    Responsive (max-width, min-width)
+
+Tool:
+    Merge Palettes
+        Repeat Types: Repeat, Repeat All, and No Repeat, provare a fare che trova pure colori complementari nel merge (da fare check)
+
+NPM:
+    Check if replace-color works
