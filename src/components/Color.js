@@ -1,4 +1,9 @@
-const Color = ({color, id}) => {
+import { useEffect, useState } from 'react'
+
+const Color = ({colorstart, id, colorChange}) => {
+
+    const [color, setColor] = useState(colorstart)
+
     return(
         <div
         className="color"
@@ -7,7 +12,15 @@ const Color = ({color, id}) => {
             height: '50px',
             backgroundColor: color
         }}
-        key = { id }></div>
+        key = { id }>
+            <button
+            className = 'btnColor'
+            style={{
+                opacity: 0,
+                width: '42px',
+                height: '42px',
+            }} onClick={ () => colorChange(id,color) }/>
+        </div>
     )
 }
 
