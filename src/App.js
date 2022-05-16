@@ -1,5 +1,5 @@
 // Hooks
-import { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react'
 
 // CSS
 import './css/scrollbar.css'
@@ -7,11 +7,11 @@ import './css/menu.css'
 
 // Media
 import inputSkin from './img/input.png'
-import outputSkin from './img/output.png'
 
 // NPM
 import pixels from 'image-pixels'
 import Skinview3d from 'react-skinview3d'
+import { HexColorPicker } from "react-colorful";
 import replaceColor from 'replace-color'
 
 // Components
@@ -20,19 +20,50 @@ import Color from './components/Color'
 // Tailwind
 import './tailwind/compiled.css'
 
-function componentToHex(c) {
+let changePalette
+
+function componentToHex(c){
     var hex = c.toString(16);
     return hex.length === 1 ? "0" + hex : hex;
 }
 
-function rgbToHex(color) {
+function rgbToHex(color){
     return "#" + componentToHex(color[0]) + componentToHex(color[1]) + componentToHex(color[2]);
+}
+
+const colorChange = (id,start) => {
+    const elementColor = document.getElementsByClassName('color')[id]
+
+    changePalette(
+        <HexColorPicker color = { start } onChange={ () => console.log(id) } />
+    )
+
+    function closePicker(e){
+        if(e.target.classList.contains('btnColor') !== true) {
+            document.getElementById('colorpicker').style.display = 'none'
+            document.removeEventListener('click', closePicker)
+        }
+    }
+
+    document.documentElement.addEventListener('click', (e) => closePicker(e))
+
+    const colorPicker = document.getElementById('colorpicker')
+    console.log(colorPicker)
+
+    const offsetY = 15
+    const offsetX = 15
+
+    colorPicker.style.top = (elementColor.offsetTop + offsetY) + 'px'
+    colorPicker.style.left = (elementColor.offsetLeft + elementColor.offsetWidth + offsetX) + 'px'
+
+    colorPicker.style.display = 'block'
 }
 
 function App() { 
 
     const [colors, setColors] = useState([])
     const [colorsdiv, setColorsDiv] = useState([])
+    const [colorpicker,setColorPicker] = useState(null)
 
     useEffect(() => {
         async function getPixels(){
@@ -56,7 +87,7 @@ function App() {
 
             const colorsd = []
 
-            for (let i = 0; i < colors.length; i++) colorsd.push(<Color color = {colors[i][0]} key = {i} />)
+            for (let i = 0; i < colors.length; i++) colorsd.push(<Color colorstart = { colors[i][0] } id = { i } colorChange = { colorChange } />)
 
             console.log(colorsd)
             
@@ -64,12 +95,16 @@ function App() {
             setColorsDiv(colorsd)
         }
         getPixels()
+        changePalette = setColorPicker
     }, [])
 
     // console.log(Skinview3d)
 
     return (
         <div id="container">
+            <div id="colorpicker" className="absolute" style={{display: 'none'}}>
+                { colorpicker }
+            </div>
             <nav className="absolute left-0 right-0 container mx-auto p-6">
                 <div className="flex items-center justify-between">
                     <div className="text-3xl text-blurple font-radiocanada font-semibold">Skinalette</div>
