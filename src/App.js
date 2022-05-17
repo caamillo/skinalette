@@ -31,21 +31,12 @@ function rgbToHex(color){
     return "#" + componentToHex(color[0]) + componentToHex(color[1]) + componentToHex(color[2]);
 }
 
-const colorChange = (id,start) => {
+const colorChange = (id, start) => {
     const elementColor = document.getElementsByClassName('color')[id]
 
     changePalette(
         <HexColorPicker color = { start } onChange={ () => console.log(id) } />
     )
-
-    function closePicker(e){
-        if(e.target.classList.contains('btnColor') !== true) {
-            document.getElementById('colorpicker').style.display = 'none'
-            document.removeEventListener('click', closePicker)
-        }
-    }
-
-    document.documentElement.addEventListener('click', (e) => closePicker(e))
 
     const colorPicker = document.getElementById('colorpicker')
     console.log(colorPicker)
@@ -55,6 +46,11 @@ const colorChange = (id,start) => {
 
     colorPicker.style.top = (elementColor.offsetTop + offsetY) + 'px'
     colorPicker.style.left = (elementColor.offsetLeft + elementColor.offsetWidth + offsetX) + 'px'
+
+    for (let i = 0; i < document.getElementsByClassName('color').length; i++)
+        document.getElementsByClassName('color')[i].classList.remove('active')
+    
+    elementColor.classList.add('active')
 
     colorPicker.style.display = 'block'
 }
@@ -98,7 +94,11 @@ function App() {
         changePalette = setColorPicker
     }, [])
 
-    // console.log(Skinview3d)
+    document.documentElement.addEventListener('click', (e) => {
+        if(document.getElementById('colorpicker') && e.target.classList.contains('btnColor') !== true){
+            document.getElementById('colorpicker').style.display = 'none'
+        }
+    })
 
     return (
         <div id="container">
