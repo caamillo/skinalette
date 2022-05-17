@@ -1,5 +1,5 @@
 // Hooks
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 
 // CSS
 import './css/scrollbar.css'
@@ -20,7 +20,7 @@ import Color from './components/Color'
 // Tailwind
 import './tailwind/compiled.css'
 
-let changePalette
+let changePalette, palette
 
 function componentToHex(c){
     var hex = c.toString(16);
@@ -37,6 +37,7 @@ const colorChange = (id, start) => {
     changePalette(
         <HexColorPicker color = { start } onChange={ () => console.log(id) } />
     )
+    console.log(palette[0].current)
 
     const colorPicker = document.getElementById('colorpicker')
     console.log(colorPicker)
@@ -60,6 +61,13 @@ function App() {
     const [colors, setColors] = useState([])
     const [colorsdiv, setColorsDiv] = useState([])
     const [colorpicker,setColorPicker] = useState(null)
+    const itemsRef = useRef([])
+
+    useEffect(() => {
+        itemsRef.current = colorsdiv
+        console.log(itemsRef)
+        itemsRef.current = colorsdiv.map((color,i) => color.ref = itemsRef.current[i])
+    },[colorsdiv])
 
     useEffect(() => {
         async function getPixels(){
@@ -84,8 +92,6 @@ function App() {
             const colorsd = []
 
             for (let i = 0; i < colors.length; i++) colorsd.push(<Color colorstart = { colors[i][0] } id = { i } colorChange = { colorChange } />)
-
-            console.log(colorsd)
             
             setColors(colors)
             setColorsDiv(colorsd)
@@ -95,7 +101,7 @@ function App() {
     }, [])
 
     document.documentElement.addEventListener('click', (e) => {
-        if(document.getElementById('colorpicker') && e.target.classList.contains('btnColor') !== true){
+        if(document.getElementById('colorpicker') && (e.target.classList.contains('color') !== true && e.target.className.indexOf('react-colorful') < 0)) {
             document.getElementById('colorpicker').style.display = 'none'
         }
     })

@@ -1,3 +1,8 @@
+Color Picker:
+    cambia i colori
+    non fare render per ogni swing (perchè sfrutta troppa memoria e cpu)
+    onscreenchange color picker si muove presso il color div (quello con classe attiva)
+
 CSS:
     Responsive (max-width, min-width) to grid
 
