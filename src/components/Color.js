@@ -13,7 +13,8 @@ const Color = ({colorstart, id, colorChange}) => {
             backgroundColor: color
         }}
         key = { id }
-        onClick = { () => colorChange(id, color) } />
+        onClick = { () => colorChange(id, color) }
+        />
     )
 }
 
