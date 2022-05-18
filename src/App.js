@@ -5,6 +5,9 @@ import { useEffect, useState, useRef } from 'react'
 import './css/scrollbar.css'
 import './css/menu.css'
 
+// Media
+import testskin from './img/input.png'
+
 // NPM
 import pixels from 'image-pixels'
 import Skinview3d from 'react-skinview3d'
@@ -29,6 +32,7 @@ function rgbToHex(color){
 }
 
 const colorChange = (id, start, changeColor) => {
+    alert(id)
     const elementColor = document.getElementsByClassName('color')[id]
 
     changeColors = changeColor
@@ -57,14 +61,15 @@ const colorChange = (id, start, changeColor) => {
 function App() { 
 
     const [colors, setColors] = useState([])
-    const [colorsdiv, setColorsDiv] = useState([])
     const [colorpicker,setColorPicker] = useState(null)
-    const [inputskin, setInputSkin] = useState(null)
+    const [inputskin, setInputSkin] = useState(localStorage.getItem('skin') !== null ? localStorage.getItem('skin') : testskin)
 
     const inputFile = useRef(null) // rename as inputSkin
 
     useEffect(() => {
+        const allcolors = []
         async function getPixels(){
+            console.log('changed input skin')
             const image = await pixels(inputskin)
             for(let i = 0; i < image.height; i++){
                 pixelLoop:
@@ -77,22 +82,18 @@ function App() {
 
                     const hex = rgbToHex(color)
 
-                    for (let clr of colors) if (clr[0] === hex) {clr[1]++; continue pixelLoop}
-                    if (!(colors.includes(hex)) && color[3] != 0) colors.push([hex,0])
+                    for (let clr of allcolors) if (clr[0] === hex) { clr[1]++; continue pixelLoop }
+                    if (!(allcolors.includes(hex)) && color[3] != 0) allcolors.push([hex,0])
                 }
             }
-            colors.sort((a,b) => b[1] - a[1])
-
-            const colorsd = []
-
-            for (let i = 0; i < colors.length; i++) colorsd.push(<Color colorstart = { colors[i][0] } id = { i } colorChange = { colorChange } />)
+            allcolors.sort((a,b) => b[1] - a[1])
             
-            setColors(colors)
-            setColorsDiv(colorsd)
+            setColors(allcolors)
+            console.log(allcolors)
         }
         getPixels()
         changePalette = setColorPicker
-    }, [])
+    }, [inputskin])
 
     document.documentElement.addEventListener('click', (e) => {
         if(document.getElementById('colorpicker') && (e.target.classList.contains('color') !== true && e.target.className.indexOf('react-colorful') < 0)) {
@@ -122,14 +123,22 @@ function App() {
                                     { inputskin && <Skinview3d skinUrl = { inputskin } height = "300" width = "300" /> }
                                 </div>
                                 <div className="change flex items-center justify-center mb-5 space-x-2">
-                                    <input type='file' ref={ inputFile } onChange={ (e) => setInputSkin(e.target.value) } style={{display: 'none'}}/>
+                                    <input type='file' ref={ inputFile } onChange={ (e) => {
+                                        const reader = new FileReader()
+                                        reader.addEventListener('load', () => {
+                                            localStorage.setItem('skin', reader.result)
+                                            setInputSkin(reader.result)
+                                            console.log(reader.result)
+                                        })
+                                        reader.readAsDataURL(e.target.files[0])
+                                    }} style={{display: 'none'}}/>
                                     <button onClick={ () => inputFile.current.click() } className='border-2 border-blurple p-1 px-5 text-blurple rounded-md font-radiocanada font-semibold'>Change</button>
                                     <button className='border-2 border-blurple p-1 px-3 text-snow bg-blurple rounded-md font-radiocanada font-semibold'>Download</button>
                                 </div>
                             </div>
                             <div className='colors overflow-auto max-h-[250px]'>
-                                <div className="grid grid-cols-3 gap-2 mr-5 child:border-2 child:border-blurple child:rounded-md">
-                                    { colorsdiv }
+                                <div id="colors" className="grid grid-cols-3 gap-2 mr-5 child:border-2 child:border-blurple child:rounded-md">
+                                    { colors.map(([color], i) => <Color colorstart = { color } id = { i } colorChange = { colorChange } />) }
                                 </div>
                             </div>
                         </div>
