@@ -12,7 +12,6 @@ const Color = ({colorstart, id, colorChange}) => {
             height: '50px',
             backgroundColor: color
         }}
-        key = { id }
         onClick = { () => colorChange(id, color, setColor) }
         />
     )
