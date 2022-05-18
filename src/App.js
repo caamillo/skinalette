@@ -11,8 +11,9 @@ import testskin from './img/input.png'
 // NPM
 import pixels from 'image-pixels'
 import Skinview3d from 'react-skinview3d'
-import { HexColorPicker } from "react-colorful";
+import { HexColorPicker } from "react-colorful"
 import replaceColor from 'replace-color'
+
 
 // Components
 import Color from './components/Color'
@@ -20,7 +21,8 @@ import Color from './components/Color'
 // Tailwind
 import './tailwind/compiled.css'
 
-let changePalette, changeColors
+let changePalette, targetColorId, targetChangeColor, skin, changeSkin, colorsused
+let changing = false
 
 function componentToHex(c){
     var hex = c.toString(16);
@@ -31,14 +33,66 @@ function rgbToHex(color){
     return "#" + componentToHex(color[0]) + componentToHex(color[1]) + componentToHex(color[2]);
 }
 
+const rgba2hex = (rgba) => `#${rgba.match(/^rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*(\d+\.{0,1}\d*))?\)$/).slice(1).map((n, i) => (i === 3 ? Math.round(parseFloat(n) * 255) : parseFloat(n)).toString(16).padStart(2, '0').replace('NaN', '')).join('')}`
+
+function getPalette(image){
+    const allcolors = []
+    for(let i = 0; i < image.height; i++){
+        pixelLoop:
+        for(let j = 0; j < image.width; j++){
+            const color = []
+
+            for(let k = 0; k < 4; k++) {
+                color.push(image.data[(i * image.width + j) * 4 + k])
+            }
+
+            const hex = rgbToHex(color)
+
+            for (let clr of allcolors) if (clr[0] === hex) { clr[1]++; continue pixelLoop }
+            if (!(allcolors.includes(hex)) && color[3] != 0) allcolors.push([hex,0])
+        }
+    }
+    return allcolors
+}
+
 const colorChange = (id, start, changeColor) => {
-    alert(id)
     const elementColor = document.getElementsByClassName('color')[id]
 
-    changeColors = changeColor
+    targetColorId = id
+    targetChangeColor = changeColor
 
     changePalette(
-        <HexColorPicker color = { start } onChange={ changeColors } />
+        <HexColorPicker color = { start } onChange={ (color) => {
+            // console.log(color,colorsused)
+            if (changing) return
+            changing = true
+            setTimeout(
+                replaceColor,
+                0,
+                {
+                    image: skin,
+                    colors: {
+                        type: 'hex',
+                        targetColor: rgba2hex(document.getElementsByClassName('color')[targetColorId].style.backgroundColor),
+                        replaceColor: color
+                    }
+                },
+                (err, jimpObject) => {
+                    if (err) return console.log(err)
+                    console.log(rgba2hex(document.getElementsByClassName('color')[targetColorId].style.backgroundColor), color)
+                    jimpObject.getBase64(-1, (err, res) => {
+                        if (err) return console.log(err)
+                        console.log(getPalette(jimpObject.bitmap).length < colorsused.length)
+                        if (getPalette(jimpObject.bitmap).length < colorsused.length || colorsused.filter(([clr]) => clr === color).length > 0) { changing = false; return }
+                        targetChangeColor(color)
+                        changeSkin(res)
+                        localStorage.setItem('skin', res)
+                        changing = false
+                        console.log(res)
+                    })
+                }
+            )
+        } } />
     )
 
     const colorPicker = document.getElementById('colorpicker')
@@ -66,33 +120,23 @@ function App() {
 
     const inputFile = useRef(null) // rename as inputSkin
 
+    /*useEffect(() => {
+        colorsused = colors
+    },[colors])*/
+
     useEffect(() => {
-        const allcolors = []
         async function getPixels(){
             console.log('changed input skin')
             const image = await pixels(inputskin)
-            for(let i = 0; i < image.height; i++){
-                pixelLoop:
-                for(let j = 0; j < image.width; j++){
-                    const color = []
-
-                    for(let k = 0; k < 4; k++) {
-                        color.push(image.data[(i * image.width + j) * 4 + k])
-                    }
-
-                    const hex = rgbToHex(color)
-
-                    for (let clr of allcolors) if (clr[0] === hex) { clr[1]++; continue pixelLoop }
-                    if (!(allcolors.includes(hex)) && color[3] != 0) allcolors.push([hex,0])
-                }
-            }
+            const allcolors = getPalette(image)
             allcolors.sort((a,b) => b[1] - a[1])
-            
             setColors(allcolors)
-            console.log(allcolors)
         }
         getPixels()
         changePalette = setColorPicker
+        skin = inputskin
+        changeSkin = setInputSkin
+        colorsused = colors
     }, [inputskin])
 
     document.documentElement.addEventListener('click', (e) => {
@@ -109,8 +153,8 @@ function App() {
             <nav className="absolute left-0 right-0 container mx-auto p-6">
                 <div className="flex items-center justify-between">
                     <div className="text-3xl text-blurple font-radiocanada font-semibold">Skinalette</div>
-                    <div className="hidden space-x-6 text-blurple font-radiocanada md:flex md:justify-end">
-                        <a className="hover:text-lightblurple selected" href="#">Home</a>
+                    <div className="flex space-x-6 text-blurple font-radiocanada md:justify-end">
+                        <a className="hidden md:block hover:text-lightblurple selected" href="#">Home</a>
                         <a className="hover:text-lightblurple" href="#">About</a>
                     </div>
                 </div>
