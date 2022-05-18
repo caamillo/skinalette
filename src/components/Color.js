@@ -12,15 +12,9 @@ const Color = ({colorstart, id, colorChange}) => {
             height: '50px',
             backgroundColor: color
         }}
-        key = { id }>
-            <button
-            className = 'btnColor'
-            style={{
-                opacity: 0,
-                width: '42px',
-                height: '42px',
-            }} onClick={ () => colorChange(id,color) }/>
-        </div>
+        key = { id }
+        onClick = { () => colorChange(id, color, setColor) }
+        />
     )
 }
 

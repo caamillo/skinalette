@@ -1,9 +1,19 @@
+Color Picker:
+    non fare render per ogni swing (perchè sfrutta troppa memoria e cpu)
+    onscreenchange color picker si muove presso il color div (quello con classe attiva)
+
 CSS:
     Responsive (max-width, min-width) to grid
 
 Tool:
+    Upload Skin with session name folder
+    every tot seconds if user offline then delete the folder
     Merge Palettes
-        Repeat Types: Repeat, Repeat All, and No Repeat, provare a fare che trova pure colori complementari nel merge (da fare check)
+        Repeat Types: 
+            Repeat,
+            Repeat All,
+            and No Repeat,
+            provare a fare che trova pure colori complementari nel merge (da fare check)
 
 NPM:
     Check if replace-color works

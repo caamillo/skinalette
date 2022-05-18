@@ -1,12 +1,9 @@
 // Hooks
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 
 // CSS
 import './css/scrollbar.css'
 import './css/menu.css'
-
-// Media
-import inputSkin from './img/input.png'
 
 // NPM
 import pixels from 'image-pixels'
@@ -20,7 +17,7 @@ import Color from './components/Color'
 // Tailwind
 import './tailwind/compiled.css'
 
-let changePalette
+let changePalette, changeColors
 
 function componentToHex(c){
     var hex = c.toString(16);
@@ -31,21 +28,14 @@ function rgbToHex(color){
     return "#" + componentToHex(color[0]) + componentToHex(color[1]) + componentToHex(color[2]);
 }
 
-const colorChange = (id,start) => {
+const colorChange = (id, start, changeColor) => {
     const elementColor = document.getElementsByClassName('color')[id]
 
+    changeColors = changeColor
+
     changePalette(
-        <HexColorPicker color = { start } onChange={ () => console.log(id) } />
+        <HexColorPicker color = { start } onChange={ changeColors } />
     )
-
-    function closePicker(e){
-        if(e.target.classList.contains('btnColor') !== true) {
-            document.getElementById('colorpicker').style.display = 'none'
-            document.removeEventListener('click', closePicker)
-        }
-    }
-
-    document.documentElement.addEventListener('click', (e) => closePicker(e))
 
     const colorPicker = document.getElementById('colorpicker')
     console.log(colorPicker)
@@ -56,6 +46,11 @@ const colorChange = (id,start) => {
     colorPicker.style.top = (elementColor.offsetTop + offsetY) + 'px'
     colorPicker.style.left = (elementColor.offsetLeft + elementColor.offsetWidth + offsetX) + 'px'
 
+    for (let i = 0; i < document.getElementsByClassName('color').length; i++)
+        document.getElementsByClassName('color')[i].classList.remove('active')
+    
+    elementColor.classList.add('active')
+
     colorPicker.style.display = 'block'
 }
 
@@ -64,10 +59,13 @@ function App() {
     const [colors, setColors] = useState([])
     const [colorsdiv, setColorsDiv] = useState([])
     const [colorpicker,setColorPicker] = useState(null)
+    const [inputskin, setInputSkin] = useState(null)
+
+    const inputFile = useRef(null) // rename as inputSkin
 
     useEffect(() => {
         async function getPixels(){
-            const image = await pixels(inputSkin)
+            const image = await pixels(inputskin)
             for(let i = 0; i < image.height; i++){
                 pixelLoop:
                 for(let j = 0; j < image.width; j++){
@@ -88,8 +86,6 @@ function App() {
             const colorsd = []
 
             for (let i = 0; i < colors.length; i++) colorsd.push(<Color colorstart = { colors[i][0] } id = { i } colorChange = { colorChange } />)
-
-            console.log(colorsd)
             
             setColors(colors)
             setColorsDiv(colorsd)
@@ -98,7 +94,11 @@ function App() {
         changePalette = setColorPicker
     }, [])
 
-    // console.log(Skinview3d)
+    document.documentElement.addEventListener('click', (e) => {
+        if(document.getElementById('colorpicker') && (e.target.classList.contains('color') !== true && e.target.className.indexOf('react-colorful') < 0)) {
+            document.getElementById('colorpicker').style.display = 'none'
+        }
+    })
 
     return (
         <div id="container">
@@ -119,10 +119,11 @@ function App() {
                         <div className="content flex items-center">
                             <div className="avatar">
                                 <div className="render">
-                                    <Skinview3d skinUrl = { inputSkin } height = "300" width = "300" />
+                                    { inputskin && <Skinview3d skinUrl = { inputskin } height = "300" width = "300" /> }
                                 </div>
                                 <div className="change flex items-center justify-center mb-5 space-x-2">
-                                    <button className='border-2 border-blurple p-1 px-5 text-blurple rounded-md font-radiocanada font-semibold'>Change</button>
+                                    <input type='file' ref={ inputFile } onChange={ (e) => setInputSkin(e.target.value) } style={{display: 'none'}}/>
+                                    <button onClick={ () => inputFile.current.click() } className='border-2 border-blurple p-1 px-5 text-blurple rounded-md font-radiocanada font-semibold'>Change</button>
                                     <button className='border-2 border-blurple p-1 px-3 text-snow bg-blurple rounded-md font-radiocanada font-semibold'>Download</button>
                                 </div>
                             </div>
