@@ -138,7 +138,7 @@ function App() {
                             </div>
                             <div className='colors overflow-auto max-h-[250px]'>
                                 <div id="colors" className="grid grid-cols-3 gap-2 mr-5 child:border-2 child:border-blurple child:rounded-md">
-                                    { colors.map(([color], i) => <Color colorstart = { color } id = { i } colorChange = { colorChange } />) }
+                                    { colors.map(([color], i) => <Color colorstart = { color } key = { color } id = { i } colorChange = { colorChange } />) }
                                 </div>
                             </div>
                         </div>
