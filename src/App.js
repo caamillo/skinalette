@@ -12,15 +12,12 @@ import testskin from './img/input.png'
 import pixels from 'image-pixels'
 import Skinview3d from 'react-skinview3d'
 import { HexColorPicker } from "react-colorful"
-import replaceColor from 'replace-color'
-
 
 // Components
 import Color from './components/Color'
 
 // Tailwind
 import './tailwind/compiled.css'
-
 let changePalette, targetColorId, targetChangeColor, skin, changeSkin, colorsused
 let changing = false
 
@@ -37,8 +34,9 @@ const rgba2hex = (rgba) => `#${rgba.match(/^rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s
 
 function getPalette(image){
     const allcolors = []
+    var pixelCount = -1
     for(let i = 0; i < image.height; i++){
-        pixelLoop:
+        imgLoop:
         for(let j = 0; j < image.width; j++){
             const color = []
 
@@ -46,13 +44,40 @@ function getPalette(image){
                 color.push(image.data[(i * image.width + j) * 4 + k])
             }
 
-            const hex = rgbToHex(color)
+            if (color[3] == 0) continue
 
-            for (let clr of allcolors) if (clr[0] === hex) { clr[1]++; continue pixelLoop }
-            if (!(allcolors.includes(hex)) && color[3] != 0) allcolors.push([hex,0])
+            const hex = rgbToHex(color)
+            pixelCount++
+
+            for (let clr of allcolors) if (clr.color === hex && color[3] != 0) {clr.pixels.push(pixelCount); continue imgLoop}
+            allcolors.push({color: hex, rgb: color, pixels: [pixelCount]})
         }
     }
+    allcolors.sort((clr1, clr2) => clr2.pixels.length - clr1.pixels.length)
+    console.log(allcolors)
     return allcolors
+}
+
+const getBitMap = (palette) => {
+    const bitmap = []
+    // getPixel(i)['rgb'].map((x) => console.log(x))
+    for (let i = 0; i < getPaletteSize(palette); i++)
+        console.log(getPixel(i))
+    return bitmap
+}
+
+const getPaletteSize = (palette) => {
+    let size = 0
+    for (let i = 0; i < palette.length; i++)
+        size += palette[i].pixels.length
+    return size
+}
+
+const getPixel = (pixel) => {
+    for (let i = 0; i < colorsused.length; i++)
+        for (let j = 0; j < colorsused[i].pixels.length; j++)
+            if (colorsused[i].pixels[j] == pixel) return colorsused[i]
+    return null
 }
 
 const colorChange = (id, start, changeColor) => {
@@ -62,41 +87,29 @@ const colorChange = (id, start, changeColor) => {
     targetChangeColor = changeColor
 
     changePalette(
-        <HexColorPicker color = { start } onChange={ (color) => {
-            // console.log(color,colorsused)
-            if (changing) return
-            changing = true
-            setTimeout(
-                replaceColor,
-                0,
-                {
-                    image: skin,
-                    colors: {
-                        type: 'hex',
-                        targetColor: rgba2hex(document.getElementsByClassName('color')[targetColorId].style.backgroundColor),
-                        replaceColor: color
-                    }
-                },
-                (err, jimpObject) => {
-                    if (err) return console.log(err)
-                    console.log(rgba2hex(document.getElementsByClassName('color')[targetColorId].style.backgroundColor), color)
-                    jimpObject.getBase64(-1, (err, res) => {
-                        if (err) return console.log(err)
-                        console.log(getPalette(jimpObject.bitmap).length < colorsused.length)
-                        if (getPalette(jimpObject.bitmap).length < colorsused.length || colorsused.filter(([clr]) => clr === color).length > 0) { changing = false; return }
-                        targetChangeColor(color)
-                        changeSkin(res)
-                        localStorage.setItem('skin', res)
-                        changing = false
-                        console.log(res)
-                    })
-                }
-            )
+        <HexColorPicker color = { start } onChange={ async (changingColor) => {
+            var cvs = document.createElement('canvas')
+            var img = new Image()
+            img.src = skin
+            img.onload = function(){
+                cvs.width = img.width
+                cvs.height = img.height
+                var ctx = cvs.getContext('2d')
+                ctx.drawImage(img, 0, 0)
+                var imageData = ctx.getImageData(0, 0, img.width, img.height)
+                var data = imageData.data
+                const palette = getPalette({
+                    width: img.width,
+                    height: img.height,
+                    data: data
+                })
+                console.log(getBitMap(palette))
+            }
         } } />
     )
 
     const colorPicker = document.getElementById('colorpicker')
-    console.log(colorPicker)
+    // log(colorPicker)
 
     const offsetY = 15
     const offsetX = 15
@@ -126,11 +139,8 @@ function App() {
 
     useEffect(() => {
         async function getPixels(){
-            console.log('changed input skin')
-            const image = await pixels(inputskin)
-            const allcolors = getPalette(image)
-            allcolors.sort((a,b) => b[1] - a[1])
-            setColors(allcolors)
+            // console.log('changed input skin')
+            setColors(getPalette(await pixels(inputskin)))
         }
         getPixels()
         changePalette = setColorPicker
@@ -172,7 +182,7 @@ function App() {
                                         reader.addEventListener('load', () => {
                                             localStorage.setItem('skin', reader.result)
                                             setInputSkin(reader.result)
-                                            console.log(reader.result)
+                                            // console.log(reader.result)
                                         })
                                         reader.readAsDataURL(e.target.files[0])
                                     }} style={{display: 'none'}}/>
@@ -182,7 +192,7 @@ function App() {
                             </div>
                             <div className='colors overflow-auto max-h-[250px]'>
                                 <div id="colors" className="grid grid-cols-3 gap-2 mr-5 child:border-2 child:border-blurple child:rounded-md">
-                                    { colors.map(([color], i) => <Color colorstart = { color } key = { color } id = { i } colorChange = { colorChange } />) }
+                                    { colors.map(({ color }, i) => <Color colorstart = { color } key = { color } id = { i } colorChange = { colorChange } />) }
                                 </div>
                             </div>
                         </div>

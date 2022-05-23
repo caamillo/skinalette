@@ -9,13 +9,13 @@
     "axios": "^0.27.2",
     "fs": "^0.0.1-security",
     "image-pixels": "^2.2.2",
-    "jimp": "^0.16.1",
     "path": "^0.12.7",
     "pngjs": "^6.0.0",
     "react": "^18.1.0",
     "react-async": "^10.0.1",
     "react-colorful": "^5.5.1",
     "react-dom": "^18.1.0",
+    "react-jimp": "^1.1.7",
     "react-scripts": "5.0.1",
     "react-skinview3d": "^3.0.1",
     "replace-color": "^2.3.0",
@@ -30,6 +30,10 @@
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "tailwind": "npx tailwindcss -i ./src/tailwind/tailwind.css -o ./src/tailwind/compiled.css --watch"
+  },
+  "browser": {
+    "fs": false,
+    "assert": false
   },
   "eslintConfig": {
     "extends": [

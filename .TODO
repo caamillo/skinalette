@@ -1,4 +1,5 @@
 Color Picker:
+    No replace color ma fare array di pixels e poi vettore cambiare i pixel in base al vettore
     fix bug that when change color it will not update the color
     # non fare render per ogni swing (perchè sfrutta troppa memoria e cpu)
     onscreenchange color picker si muove presso il color div (quello con classe attiva)
