@@ -30,7 +30,17 @@ function rgbToHex(color){
     return "#" + componentToHex(color[0]) + componentToHex(color[1]) + componentToHex(color[2]);
 }
 
-const rgba2hex = (rgba) => `#${rgba.match(/^rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*(\d+\.{0,1}\d*))?\)$/).slice(1).map((n, i) => (i === 3 ? Math.round(parseFloat(n) * 255) : parseFloat(n)).toString(16).padStart(2, '0').replace('NaN', '')).join('')}`
+function hexToRgb(hex) {
+    var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+    return result ? [
+      parseInt(result[1], 16),
+      parseInt(result[2], 16),
+      parseInt(result[3], 16),
+      255
+     ] : null;
+  }
+
+// const rgba2hex = (rgba) => `#${rgba.match(/^rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*(\d+\.{0,1}\d*))?\)$/).slice(1).map((n, i) => (i === 3 ? Math.round(parseFloat(n) * 255) : parseFloat(n)).toString(16).padStart(2, '0').replace('NaN', '')).join('')}`
 
 function getPalette(image){
     const allcolors = []
@@ -62,7 +72,8 @@ const getBitMap = (palette) => {
     const bitmap = []
     // getPixel(i)['rgb'].map((x) => console.log(x))
     for (let i = 0; i < getPaletteSize(palette); i++)
-        console.log(getPixel(i))
+        getPixel(i, palette).rgb.map((x) => bitmap.push(x))
+    // console.log(bitmap)
     return bitmap
 }
 
@@ -73,10 +84,10 @@ const getPaletteSize = (palette) => {
     return size
 }
 
-const getPixel = (pixel) => {
-    for (let i = 0; i < colorsused.length; i++)
-        for (let j = 0; j < colorsused[i].pixels.length; j++)
-            if (colorsused[i].pixels[j] == pixel) return colorsused[i]
+const getPixel = (pixel, palette) => {
+    for (let i = 0; i < palette.length; i++)
+        for (let j = 0; j < palette[i].pixels.length; j++)
+            if (palette[i].pixels[j] == pixel) return palette[i]
     return null
 }
 
@@ -103,7 +114,15 @@ const colorChange = (id, start, changeColor) => {
                     height: img.height,
                     data: data
                 })
-                console.log(getBitMap(palette))
+                palette[id].hex = changingColor
+                palette[id].rgb = hexToRgb(changingColor)
+                const bitmap = getBitMap(palette)
+                const datanew = ctx.createImageData(img.width, img.height)
+                if (datanew.data.set) datanew.data.set(bitmap)
+                else bitmap.forEach((val,i) => datanew.data[i] = val)
+                ctx.putImageData(datanew, 0, 0)
+                console.log(datanew)
+                targetChangeColor(changingColor)
             }
         } } />
     )
