@@ -27,6 +27,7 @@ function componentToHex(c){
 }
 
 function rgbToHex(color){
+    if (color[3] == 0) return null
     return "#" + componentToHex(color[0]) + componentToHex(color[1]) + componentToHex(color[2]);
 }
 
@@ -54,17 +55,17 @@ function getPalette(image){
                 color.push(image.data[(i * image.width + j) * 4 + k])
             }
 
-            if (color[3] == 0) continue
+            // if (color[3] == 0) continue
 
             const hex = rgbToHex(color)
             pixelCount++
 
-            for (let clr of allcolors) if (clr.color === hex && color[3] != 0) {clr.pixels.push(pixelCount); continue imgLoop}
-            allcolors.push({color: hex, rgb: color, pixels: [pixelCount]})
+            for (let clr of allcolors) if (clr.color === hex) {clr.pixels.push(pixelCount); continue imgLoop}
+            allcolors.push({color: (color[3] != null) ? hex : null, rgb: color, pixels: [pixelCount]})
         }
     }
     allcolors.sort((clr1, clr2) => clr2.pixels.length - clr1.pixels.length)
-    console.log(allcolors)
+    // console.log(allcolors)
     return allcolors
 }
 
@@ -72,7 +73,7 @@ const getBitMap = (palette) => {
     const bitmap = []
     // getPixel(i)['rgb'].map((x) => console.log(x))
     for (let i = 0; i < getPaletteSize(palette); i++)
-        getPixel(i, palette).rgb.map((x) => bitmap.push(x))
+        getPixel(i, palette).rgb.map((x) => {bitmap.push(x)})
     // console.log(bitmap)
     return bitmap
 }
@@ -99,6 +100,7 @@ const colorChange = (id, start, changeColor) => {
 
     changePalette(
         <HexColorPicker color = { start } onChange={ async (changingColor) => {
+            changing = true
             var cvs = document.createElement('canvas')
             var img = new Image()
             img.src = skin
@@ -121,8 +123,11 @@ const colorChange = (id, start, changeColor) => {
                 if (datanew.data.set) datanew.data.set(bitmap)
                 else bitmap.forEach((val,i) => datanew.data[i] = val)
                 ctx.putImageData(datanew, 0, 0)
-                console.log(datanew)
+                changeSkin(cvs.toDataURL())
+                console.log(skin)
                 targetChangeColor(changingColor)
+                localStorage.setItem('skin', skin)
+                changing = false
             }
         } } />
     )
@@ -211,7 +216,7 @@ function App() {
                             </div>
                             <div className='colors overflow-auto max-h-[250px]'>
                                 <div id="colors" className="grid grid-cols-3 gap-2 mr-5 child:border-2 child:border-blurple child:rounded-md">
-                                    { colors.map(({ color }, i) => <Color colorstart = { color } key = { color } id = { i } colorChange = { colorChange } />) }
+                                    { colors.map(({ color }, i) => i > 0 ? <Color colorstart = { color } key = { color } id = { i } colorChange = { colorChange } /> : null) }
                                 </div>
                             </div>
                         </div>
