@@ -124,7 +124,7 @@ const colorChange = (id, start, changeColor) => {
                 else bitmap.forEach((val,i) => datanew.data[i] = val)
                 ctx.putImageData(datanew, 0, 0)
                 changeSkin(cvs.toDataURL())
-                console.log(skin)
+                console.log(palette)
                 targetChangeColor(changingColor)
                 localStorage.setItem('skin', skin)
                 changing = false
