@@ -18,7 +18,7 @@ import Color from './components/Color'
 
 // Tailwind
 import './tailwind/compiled.css'
-let changePalette, targetColorId, targetChangeColor, skin, changeSkin, colorsused
+let changePalette, targetColorId, targetChangeColor, skin, changeSkin, colorsused, setPalette
 let changing = false
 
 function componentToHex(c){
@@ -43,7 +43,7 @@ function hexToRgb(hex) {
 
 // const rgba2hex = (rgba) => `#${rgba.match(/^rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*(\d+\.{0,1}\d*))?\)$/).slice(1).map((n, i) => (i === 3 ? Math.round(parseFloat(n) * 255) : parseFloat(n)).toString(16).padStart(2, '0').replace('NaN', '')).join('')}`
 
-function getPalette(image){
+function getPalette(image){ // when get of colors, colors will be replaced with another, find another way to do that. (Selections)
     const allcolors = []
     var pixelCount = -1
     for(let i = 0; i < image.height; i++){
@@ -61,7 +61,7 @@ function getPalette(image){
             pixelCount++
 
             for (let clr of allcolors) if (clr.color === hex) {clr.pixels.push(pixelCount); continue imgLoop}
-            allcolors.push({color: (color[3] != null) ? hex : null, rgb: color, pixels: [pixelCount]})
+            allcolors.push({id: allcolors.length, color: (color[3] != null) ? hex : null, rgb: color, pixels: [pixelCount]})
         }
     }
     allcolors.sort((clr1, clr2) => clr2.pixels.length - clr1.pixels.length)
@@ -111,7 +111,7 @@ const colorChange = (id, start, changeColor) => {
                 ctx.drawImage(img, 0, 0)
                 var imageData = ctx.getImageData(0, 0, img.width, img.height)
                 var data = imageData.data
-                const palette = getPalette({
+                const palette = getPalette({ // riciclare questa palette, non crearne una nuova per ogni roba
                     width: img.width,
                     height: img.height,
                     data: data
@@ -126,6 +126,7 @@ const colorChange = (id, start, changeColor) => {
                 changeSkin(cvs.toDataURL())
                 console.log(palette)
                 targetChangeColor(changingColor)
+                setPalette(palette)
                 localStorage.setItem('skin', skin)
                 changing = false
             }
@@ -164,13 +165,15 @@ function App() {
     useEffect(() => {
         async function getPixels(){
             // console.log('changed input skin')
-            setColors(getPalette(await pixels(inputskin)))
+            if (skin == null) setColors(getPalette(await pixels(inputskin)))
+            console.log(colors)
         }
         getPixels()
         changePalette = setColorPicker
         skin = inputskin
         changeSkin = setInputSkin
         colorsused = colors
+        setPalette = setColors
     }, [inputskin])
 
     document.documentElement.addEventListener('click', (e) => {
