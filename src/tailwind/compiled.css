@@ -670,8 +670,8 @@ Ensure the default browser behavior of the `hidden` attribute.
 }
 
 @media (min-width: 800px) {
-  .md\:flex {
-    display: flex !important;
+  .md\:block {
+    display: block !important;
   }
 
   .md\:justify-end {

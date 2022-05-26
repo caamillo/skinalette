@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 
 const Color = ({colorstart, id, colorChange}) => {
 
@@ -12,7 +12,6 @@ const Color = ({colorstart, id, colorChange}) => {
             height: '50px',
             backgroundColor: color
         }}
-        key = { id }
         onClick = { () => colorChange(id, color, setColor) }
         />
     )

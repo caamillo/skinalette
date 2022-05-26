@@ -5,19 +5,21 @@ import { useEffect, useState, useRef } from 'react'
 import './css/scrollbar.css'
 import './css/menu.css'
 
+// Media
+import testskin from './img/input.png'
+
 // NPM
 import pixels from 'image-pixels'
 import Skinview3d from 'react-skinview3d'
-import { HexColorPicker } from "react-colorful";
-import replaceColor from 'replace-color'
+import { HexColorPicker } from "react-colorful"
 
 // Components
 import Color from './components/Color'
 
 // Tailwind
 import './tailwind/compiled.css'
-
-let changePalette, changeColors
+let changePalette, targetColorId, targetChangeColor, skin, changeSkin, colorsused, setPalette
+let changing = false
 
 function componentToHex(c){
     var hex = c.toString(16);
@@ -25,20 +27,124 @@ function componentToHex(c){
 }
 
 function rgbToHex(color){
+    if (color[3] == 0) return null
     return "#" + componentToHex(color[0]) + componentToHex(color[1]) + componentToHex(color[2]);
+}
+
+function hexToRgb(hex) {
+    var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+    return result ? [
+      parseInt(result[1], 16),
+      parseInt(result[2], 16),
+      parseInt(result[3], 16),
+      255
+     ] : null;
+  }
+
+// const rgba2hex = (rgba) => `#${rgba.match(/^rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*(\d+\.{0,1}\d*))?\)$/).slice(1).map((n, i) => (i === 3 ? Math.round(parseFloat(n) * 255) : parseFloat(n)).toString(16).padStart(2, '0').replace('NaN', '')).join('')}`
+
+function getPalette(image){ // when get of colors, colors will be replaced with another, find another way to do that. (Selections)
+    const allcolors = []
+    var pixelCount = -1
+    for(let i = 0; i < image.height; i++){
+        imgLoop:
+        for(let j = 0; j < image.width; j++){
+            const color = []
+
+            for(let k = 0; k < 4; k++) {
+                color.push(image.data[(i * image.width + j) * 4 + k])
+            }
+
+            // if (color[3] == 0) continue
+
+            const hex = rgbToHex(color)
+            pixelCount++
+
+            for (let clr of allcolors) if (clr.color === hex) {clr.pixels.push(pixelCount); continue imgLoop}
+            allcolors.push({id: allcolors.length, color: (color[3] != null) ? hex : null, rgb: color, pixels: [pixelCount]})
+        }
+    }
+    allcolors.sort((clr1, clr2) => clr2.pixels.length - clr1.pixels.length)
+    // console.log(allcolors)
+    return allcolors
+}
+
+const getBitMap = (palette) => {
+    const bitmap = []
+    // getPixel(i)['rgb'].map((x) => // console.log(x))
+    for (let i = 0; i < getPaletteSize(palette); i++)
+        getPixel(i, palette).rgb.map((x) => {bitmap.push(x)})
+    // console.log(bitmap)
+    return bitmap
+}
+
+const getPaletteSize = (palette) => {
+    let size = 0
+    for (let i = 0; i < palette.length; i++)
+        size += palette[i].pixels.length
+    return size
+}
+
+const getPixel = (pixel, palette) => {
+    for (let i = 0; i < palette.length; i++)
+        for (let j = 0; j < palette[i].pixels.length; j++)
+            if (palette[i].pixels[j] == pixel) return palette[i]
+    return null
 }
 
 const colorChange = (id, start, changeColor) => {
     const elementColor = document.getElementsByClassName('color')[id]
 
-    changeColors = changeColor
+    targetColorId = id
+    targetChangeColor = changeColor
 
     changePalette(
-        <HexColorPicker color = { start } onChange={ changeColors } />
+        <HexColorPicker color = { start } onChange={ async (changingColor) => {
+            changing = true
+            var cvs = document.createElement('canvas')
+            var img = new Image()
+            img.src = skin
+            img.onload = () => {
+                cvs.width = img.width
+                cvs.height = img.height
+                var ctx = cvs.getContext('2d')
+                ctx.drawImage(img, 0, 0)
+                var imageData = ctx.getImageData(0, 0, img.width, img.height)
+                var data = imageData.data
+                try{
+                    if (colorsused.length == 0) colorsused = (JSON.parse(localStorage.getItem('palette')) === null) ? getPalette({
+                        width: img.width,
+                        height: img.height,
+                        data: data
+                    }) : JSON.parse(localStorage.getItem('palette'))
+                }catch(Error){
+                    colorsused = getPalette({
+                        width: img.width,
+                        height: img.height,
+                        data: data
+                    })
+                }
+                // console.log(colorsused)
+                colorsused[id].color = changingColor
+                colorsused[id].rgb = hexToRgb(changingColor)
+                const bitmap = getBitMap(colorsused)
+                const datanew = ctx.createImageData(img.width, img.height)
+                if (datanew.data.set) datanew.data.set(bitmap)
+                else bitmap.forEach((val,i) => datanew.data[i] = val)
+                ctx.putImageData(datanew, 0, 0)
+                changeSkin(cvs.toDataURL())
+                // console.log(colorsused)
+                targetChangeColor(changingColor)
+                setPalette(colorsused)
+                localStorage.setItem('skin', cvs.toDataURL())
+                localStorage.setItem('palette', JSON.stringify(colorsused))
+                changing = false
+            }
+        } } />
     )
 
     const colorPicker = document.getElementById('colorpicker')
-    console.log(colorPicker)
+    // log(colorPicker)
 
     const offsetY = 15
     const offsetX = 15
@@ -55,44 +161,30 @@ const colorChange = (id, start, changeColor) => {
 }
 
 function App() { 
-
-    const [colors, setColors] = useState([])
-    const [colorsdiv, setColorsDiv] = useState([])
+    const palette = JSON.parse(localStorage.getItem('palette'))
+    const [colors, setColors] = useState(palette !== null ? palette : [])
     const [colorpicker,setColorPicker] = useState(null)
-    const [inputskin, setInputSkin] = useState(null)
+    const [inputskin, setInputSkin] = useState(localStorage.getItem('skin') !== null ? localStorage.getItem('skin') : testskin)
 
     const inputFile = useRef(null) // rename as inputSkin
 
+    /*useEffect(() => {
+        colorsused = colors
+    },[colors])*/
+
     useEffect(() => {
         async function getPixels(){
-            const image = await pixels(inputskin)
-            for(let i = 0; i < image.height; i++){
-                pixelLoop:
-                for(let j = 0; j < image.width; j++){
-                    const color = []
-
-                    for(let k = 0; k < 4; k++) {
-                        color.push(image.data[(i * image.width + j) * 4 + k])
-                    }
-
-                    const hex = rgbToHex(color)
-
-                    for (let clr of colors) if (clr[0] === hex) {clr[1]++; continue pixelLoop}
-                    if (!(colors.includes(hex)) && color[3] != 0) colors.push([hex,0])
-                }
-            }
-            colors.sort((a,b) => b[1] - a[1])
-
-            const colorsd = []
-
-            for (let i = 0; i < colors.length; i++) colorsd.push(<Color colorstart = { colors[i][0] } id = { i } colorChange = { colorChange } />)
-            
-            setColors(colors)
-            setColorsDiv(colorsd)
+            // console.log('changed input skin')
+            if (JSON.parse(localStorage.getItem('palette')) === null) setColors(getPalette(await pixels(inputskin)))
+            // console.log(colors)
         }
         getPixels()
         changePalette = setColorPicker
-    }, [])
+        skin = inputskin
+        changeSkin = setInputSkin
+        colorsused = colors
+        setPalette = setColors
+    }, [inputskin])
 
     document.documentElement.addEventListener('click', (e) => {
         if(document.getElementById('colorpicker') && (e.target.classList.contains('color') !== true && e.target.className.indexOf('react-colorful') < 0)) {
@@ -108,8 +200,8 @@ function App() {
             <nav className="absolute left-0 right-0 container mx-auto p-6">
                 <div className="flex items-center justify-between">
                     <div className="text-3xl text-blurple font-radiocanada font-semibold">Skinalette</div>
-                    <div className="hidden space-x-6 text-blurple font-radiocanada md:flex md:justify-end">
-                        <a className="hover:text-lightblurple selected" href="#">Home</a>
+                    <div className="flex space-x-6 text-blurple font-radiocanada md:justify-end">
+                        <a className="hidden md:block hover:text-lightblurple selected" href="#">Home</a>
                         <a className="hover:text-lightblurple" href="#">About</a>
                     </div>
                 </div>
@@ -122,14 +214,27 @@ function App() {
                                     { inputskin && <Skinview3d skinUrl = { inputskin } height = "300" width = "300" /> }
                                 </div>
                                 <div className="change flex items-center justify-center mb-5 space-x-2">
-                                    <input type='file' ref={ inputFile } onChange={ (e) => setInputSkin(e.target.value) } style={{display: 'none'}}/>
+                                    <input type='file' ref={ inputFile } onChange={ (e) => {
+                                        const reader = new FileReader()
+                                        reader.addEventListener('load', async () => {
+                                            let palette = getPalette(await pixels(reader.result))
+                                            // console.log(palette)
+                                            localStorage.setItem('skin', reader.result)
+                                            localStorage.setItem('palette', JSON.stringify(palette))
+                                            setColors(palette)
+                                            setInputSkin(reader.result)
+                                            // console.log(colors)
+                                            // console.log(reader.result)
+                                        })
+                                        reader.readAsDataURL(e.target.files[0])
+                                    }} style={{ display: 'none' }}/>
                                     <button onClick={ () => inputFile.current.click() } className='border-2 border-blurple p-1 px-5 text-blurple rounded-md font-radiocanada font-semibold'>Change</button>
                                     <button className='border-2 border-blurple p-1 px-3 text-snow bg-blurple rounded-md font-radiocanada font-semibold'>Download</button>
                                 </div>
                             </div>
                             <div className='colors overflow-auto max-h-[250px]'>
-                                <div className="grid grid-cols-3 gap-2 mr-5 child:border-2 child:border-blurple child:rounded-md">
-                                    { colorsdiv }
+                                <div id="colors" className="grid grid-cols-3 gap-2 mr-5 child:border-2 child:border-blurple child:rounded-md">
+                                    { colors.map(({ color, id }, i) => i > 0 ? <Color colorstart = { color } key = { Math.floor(Math.random() * 999999999) } id = { i } colorChange = { colorChange } /> : null) }
                                 </div>
                             </div>
                         </div>
