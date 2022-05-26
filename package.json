@@ -7,22 +7,12 @@
     "@testing-library/react": "^13.2.0",
     "@testing-library/user-event": "^13.5.0",
     "axios": "^0.27.2",
-    "fs": "^0.0.1-security",
     "image-pixels": "^2.2.2",
-    "path": "^0.12.7",
-    "pngjs": "^6.0.0",
     "react": "^18.1.0",
-    "react-async": "^10.0.1",
     "react-colorful": "^5.5.1",
     "react-dom": "^18.1.0",
-    "react-jimp": "^1.1.7",
     "react-scripts": "5.0.1",
-    "react-skinview3d": "^3.0.1",
-    "replace-color": "^2.3.0",
-    "skinview3d": "^2.2.1",
-    "stream": "^0.0.2",
-    "web-vitals": "^2.1.4",
-    "zlib": "^1.0.5"
+    "react-skinview3d": "^3.0.1"
   },
   "scripts": {
     "start": "react-scripts start",

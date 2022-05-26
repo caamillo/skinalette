@@ -71,7 +71,7 @@ function getPalette(image){ // when get of colors, colors will be replaced with 
 
 const getBitMap = (palette) => {
     const bitmap = []
-    // getPixel(i)['rgb'].map((x) => console.log(x))
+    // getPixel(i)['rgb'].map((x) => // console.log(x))
     for (let i = 0; i < getPaletteSize(palette); i++)
         getPixel(i, palette).rgb.map((x) => {bitmap.push(x)})
     // console.log(bitmap)
@@ -124,7 +124,7 @@ const colorChange = (id, start, changeColor) => {
                         data: data
                     })
                 }
-                console.log(colorsused)
+                // console.log(colorsused)
                 colorsused[id].color = changingColor
                 colorsused[id].rgb = hexToRgb(changingColor)
                 const bitmap = getBitMap(colorsused)
@@ -133,7 +133,7 @@ const colorChange = (id, start, changeColor) => {
                 else bitmap.forEach((val,i) => datanew.data[i] = val)
                 ctx.putImageData(datanew, 0, 0)
                 changeSkin(cvs.toDataURL())
-                console.log(colorsused)
+                // console.log(colorsused)
                 targetChangeColor(changingColor)
                 setPalette(colorsused)
                 localStorage.setItem('skin', cvs.toDataURL())
@@ -176,7 +176,7 @@ function App() {
         async function getPixels(){
             // console.log('changed input skin')
             if (JSON.parse(localStorage.getItem('palette')) === null) setColors(getPalette(await pixels(inputskin)))
-            console.log(colors)
+            // console.log(colors)
         }
         getPixels()
         changePalette = setColorPicker
@@ -218,12 +218,12 @@ function App() {
                                         const reader = new FileReader()
                                         reader.addEventListener('load', async () => {
                                             let palette = getPalette(await pixels(reader.result))
-                                            console.log(palette)
+                                            // console.log(palette)
                                             localStorage.setItem('skin', reader.result)
                                             localStorage.setItem('palette', JSON.stringify(palette))
                                             setColors(palette)
                                             setInputSkin(reader.result)
-                                            console.log(colors)
+                                            // console.log(colors)
                                             // console.log(reader.result)
                                         })
                                         reader.readAsDataURL(e.target.files[0])
