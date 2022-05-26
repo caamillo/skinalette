@@ -104,30 +104,40 @@ const colorChange = (id, start, changeColor) => {
             var cvs = document.createElement('canvas')
             var img = new Image()
             img.src = skin
-            img.onload = function(){
+            img.onload = () => {
                 cvs.width = img.width
                 cvs.height = img.height
                 var ctx = cvs.getContext('2d')
                 ctx.drawImage(img, 0, 0)
                 var imageData = ctx.getImageData(0, 0, img.width, img.height)
                 var data = imageData.data
-                const palette = getPalette({ // riciclare questa palette, non crearne una nuova per ogni roba
-                    width: img.width,
-                    height: img.height,
-                    data: data
-                })
-                palette[id].hex = changingColor
-                palette[id].rgb = hexToRgb(changingColor)
-                const bitmap = getBitMap(palette)
+                try{
+                    if (colorsused.length == 0) colorsused = (JSON.parse(localStorage.getItem('palette')) === null) ? getPalette({
+                        width: img.width,
+                        height: img.height,
+                        data: data
+                    }) : JSON.parse(localStorage.getItem('palette'))
+                }catch(Error){
+                    colorsused = getPalette({
+                        width: img.width,
+                        height: img.height,
+                        data: data
+                    })
+                }
+                console.log(colorsused)
+                colorsused[id].color = changingColor
+                colorsused[id].rgb = hexToRgb(changingColor)
+                const bitmap = getBitMap(colorsused)
                 const datanew = ctx.createImageData(img.width, img.height)
                 if (datanew.data.set) datanew.data.set(bitmap)
                 else bitmap.forEach((val,i) => datanew.data[i] = val)
                 ctx.putImageData(datanew, 0, 0)
                 changeSkin(cvs.toDataURL())
-                console.log(palette)
+                console.log(colorsused)
                 targetChangeColor(changingColor)
-                setPalette(palette)
-                localStorage.setItem('skin', skin)
+                setPalette(colorsused)
+                localStorage.setItem('skin', cvs.toDataURL())
+                localStorage.setItem('palette', JSON.stringify(colorsused))
                 changing = false
             }
         } } />
@@ -151,8 +161,8 @@ const colorChange = (id, start, changeColor) => {
 }
 
 function App() { 
-
-    const [colors, setColors] = useState([])
+    const palette = JSON.parse(localStorage.getItem('palette'))
+    const [colors, setColors] = useState(palette !== null ? palette : [])
     const [colorpicker,setColorPicker] = useState(null)
     const [inputskin, setInputSkin] = useState(localStorage.getItem('skin') !== null ? localStorage.getItem('skin') : testskin)
 
@@ -165,7 +175,7 @@ function App() {
     useEffect(() => {
         async function getPixels(){
             // console.log('changed input skin')
-            if (skin == null) setColors(getPalette(await pixels(inputskin)))
+            // if (skin == null) setColors(getPalette(await pixels(inputskin)))
             console.log(colors)
         }
         getPixels()
@@ -206,20 +216,25 @@ function App() {
                                 <div className="change flex items-center justify-center mb-5 space-x-2">
                                     <input type='file' ref={ inputFile } onChange={ (e) => {
                                         const reader = new FileReader()
-                                        reader.addEventListener('load', () => {
+                                        reader.addEventListener('load', async () => {
+                                            let palette = getPalette(await pixels(reader.result))
+                                            console.log(palette)
                                             localStorage.setItem('skin', reader.result)
+                                            localStorage.setItem('palette', JSON.stringify(palette))
+                                            setColors(palette)
                                             setInputSkin(reader.result)
+                                            console.log(colors)
                                             // console.log(reader.result)
                                         })
                                         reader.readAsDataURL(e.target.files[0])
-                                    }} style={{display: 'none'}}/>
+                                    }} style={{ display: 'none' }}/>
                                     <button onClick={ () => inputFile.current.click() } className='border-2 border-blurple p-1 px-5 text-blurple rounded-md font-radiocanada font-semibold'>Change</button>
                                     <button className='border-2 border-blurple p-1 px-3 text-snow bg-blurple rounded-md font-radiocanada font-semibold'>Download</button>
                                 </div>
                             </div>
                             <div className='colors overflow-auto max-h-[250px]'>
                                 <div id="colors" className="grid grid-cols-3 gap-2 mr-5 child:border-2 child:border-blurple child:rounded-md">
-                                    { colors.map(({ color }, i) => i > 0 ? <Color colorstart = { color } key = { color } id = { i } colorChange = { colorChange } /> : null) }
+                                    { colors.map(({ color, id }, i) => i > 0 ? <Color colorstart = { color } key = { id } id = { i } colorChange = { colorChange } /> : null) }
                                 </div>
                             </div>
                         </div>
