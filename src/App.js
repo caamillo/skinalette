@@ -175,7 +175,7 @@ function App() {
     useEffect(() => {
         async function getPixels(){
             // console.log('changed input skin')
-            // if (skin == null) setColors(getPalette(await pixels(inputskin)))
+            if (JSON.parse(localStorage.getItem('palette')) === null) setColors(getPalette(await pixels(inputskin)))
             console.log(colors)
         }
         getPixels()
@@ -234,7 +234,7 @@ function App() {
                             </div>
                             <div className='colors overflow-auto max-h-[250px]'>
                                 <div id="colors" className="grid grid-cols-3 gap-2 mr-5 child:border-2 child:border-blurple child:rounded-md">
-                                    { colors.map(({ color, id }, i) => i > 0 ? <Color colorstart = { color } key = { id } id = { i } colorChange = { colorChange } /> : null) }
+                                    { colors.map(({ color, id }, i) => i > 0 ? <Color colorstart = { color } key = { Math.floor(Math.random() * 999999999) } id = { i } colorChange = { colorChange } /> : null) }
                                 </div>
                             </div>
                         </div>
