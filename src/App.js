@@ -21,6 +21,8 @@ import './tailwind/compiled.css'
 let changePalette, targetColorId, targetChangeColor, skin, changeSkin, colorsused, setPalette
 let changing = false
 
+let pointerX, pointerY
+
 const skinSize = 64
 
 function componentToHex(c){
@@ -41,7 +43,12 @@ function hexToRgb(hex) {
       parseInt(result[3], 16),
       255
      ] : null;
-  }
+}
+
+function getPointerPos(e){
+    pointerX = e.clientX
+    pointerY = e.clientY
+}
 
 function getPalette(image){
     const allcolors = []
@@ -139,13 +146,19 @@ const colorChange = (id, start, changeColor) => {
     )
 
     const colorPicker = document.getElementById('colorpicker')
+    const rect = elementColor.getBoundingClientRect()
     // log(colorPicker)
 
     const offsetY = 15
-    const offsetX = 15
+    const offsetX = 30
 
-    colorPicker.style.top = (elementColor.offsetTop + offsetY) + 'px'
-    colorPicker.style.left = (elementColor.offsetLeft + elementColor.offsetWidth + offsetX) + 'px'
+    if (pointerX === undefined || pointerY === undefined) {
+        colorPicker.style.top = (rect.top + offsetY) + 'px'
+        colorPicker.style.left = (rect.left + elementColor.offsetWidth + offsetX) + 'px'
+    } else {
+        colorPicker.style.top = (pointerY + offsetY) + 'px'
+        colorPicker.style.left = (pointerX + offsetX) + 'px'
+    }
 
     for (let i = 0; i < document.getElementsByClassName('color').length; i++)
         document.getElementsByClassName('color')[i].classList.remove('active')
@@ -188,7 +201,16 @@ function App() {
     })
 
     window.addEventListener('resize', (e) => {
-        // build colorPicker
+        const elementColor = document.getElementsByClassName('color').length > 0 ? document.getElementsByClassName('color')[targetColorId] : null
+        const rect = elementColor.getBoundingClientRect()
+
+        const colorPicker = document.getElementById('colorpicker')
+    
+        const offsetY = 15
+        const offsetX = 15
+    
+        colorPicker.style.top = (rect.top + offsetY) + 'px'
+        colorPicker.style.left = (rect.left + elementColor.offsetWidth + offsetX) + 'px'
     })
 
     return (
@@ -231,7 +253,7 @@ function App() {
                                     <button className='border-2 border-blurple p-1 px-3 text-snow bg-blurple rounded-md font-radiocanada font-semibold'>Download</button>
                                 </div>
                             </div>
-                            <div className='colors overflow-auto max-h-[250px]'>
+                            <div className='colors overflow-auto max-h-[250px]' onMouseMove={getPointerPos}>
                                 <div id="colors" className="grid grid-cols-3 gap-2 mr-5 child:border-2 child:border-blurple child:rounded-md">
                                     { colors.map(({ color, id }, i) => i > -1 ? <Color colorstart = { color } key = { Math.floor(Math.random() * 999999999) } id = { i } colorChange = { colorChange } /> : null) }
                                 </div>
