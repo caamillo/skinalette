@@ -21,6 +21,10 @@ import './tailwind/compiled.css'
 let changePalette, targetColorId, targetChangeColor, skin, changeSkin, colorsused, setPalette
 let changing = false
 
+let pointerX, pointerY
+
+const skinSize = 64
+
 function componentToHex(c){
     var hex = c.toString(16);
     return hex.length === 1 ? "0" + hex : hex;
@@ -39,11 +43,14 @@ function hexToRgb(hex) {
       parseInt(result[3], 16),
       255
      ] : null;
-  }
+}
 
-// const rgba2hex = (rgba) => `#${rgba.match(/^rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*(\d+\.{0,1}\d*))?\)$/).slice(1).map((n, i) => (i === 3 ? Math.round(parseFloat(n) * 255) : parseFloat(n)).toString(16).padStart(2, '0').replace('NaN', '')).join('')}`
+function getPointerPos(e){
+    pointerX = e.clientX
+    pointerY = e.clientY
+}
 
-function getPalette(image){ // when get of colors, colors will be replaced with another, find another way to do that. (Selections)
+function getPalette(image){
     const allcolors = []
     var pixelCount = -1
     for(let i = 0; i < image.height; i++){
@@ -55,13 +62,13 @@ function getPalette(image){ // when get of colors, colors will be replaced with 
                 color.push(image.data[(i * image.width + j) * 4 + k])
             }
 
-            // if (color[3] == 0) continue
+            pixelCount++
+            if (color[3] == 0) continue
 
             const hex = rgbToHex(color)
-            pixelCount++
 
             for (let clr of allcolors) if (clr.color === hex) {clr.pixels.push(pixelCount); continue imgLoop}
-            allcolors.push({id: allcolors.length, color: (color[3] != null) ? hex : null, rgb: color, pixels: [pixelCount]})
+            allcolors.push({id: allcolors.length, color: hex, rgb: color, pixels: [pixelCount]})
         }
     }
     allcolors.sort((clr1, clr2) => clr2.pixels.length - clr1.pixels.length)
@@ -72,24 +79,17 @@ function getPalette(image){ // when get of colors, colors will be replaced with 
 const getBitMap = (palette) => {
     const bitmap = []
     // getPixel(i)['rgb'].map((x) => // console.log(x))
-    for (let i = 0; i < getPaletteSize(palette); i++)
+    for (let i = 0; i < Math.pow(skinSize, 2); i++)
         getPixel(i, palette).rgb.map((x) => {bitmap.push(x)})
     // console.log(bitmap)
     return bitmap
-}
-
-const getPaletteSize = (palette) => {
-    let size = 0
-    for (let i = 0; i < palette.length; i++)
-        size += palette[i].pixels.length
-    return size
 }
 
 const getPixel = (pixel, palette) => {
     for (let i = 0; i < palette.length; i++)
         for (let j = 0; j < palette[i].pixels.length; j++)
             if (palette[i].pixels[j] == pixel) return palette[i]
-    return null
+    return { color: '#000000', rgb: [0, 0, 0, 0] }
 }
 
 const colorChange = (id, start, changeColor) => {
@@ -132,6 +132,8 @@ const colorChange = (id, start, changeColor) => {
                 if (datanew.data.set) datanew.data.set(bitmap)
                 else bitmap.forEach((val,i) => datanew.data[i] = val)
                 ctx.putImageData(datanew, 0, 0)
+                // console.log(cvs.toDataURL())
+                // console.log(colorsused)
                 changeSkin(cvs.toDataURL())
                 // console.log(colorsused)
                 targetChangeColor(changingColor)
@@ -144,13 +146,19 @@ const colorChange = (id, start, changeColor) => {
     )
 
     const colorPicker = document.getElementById('colorpicker')
+    const rect = elementColor.getBoundingClientRect()
     // log(colorPicker)
 
     const offsetY = 15
-    const offsetX = 15
+    const offsetX = 30
 
-    colorPicker.style.top = (elementColor.offsetTop + offsetY) + 'px'
-    colorPicker.style.left = (elementColor.offsetLeft + elementColor.offsetWidth + offsetX) + 'px'
+    if (pointerX === undefined || pointerY === undefined) {
+        colorPicker.style.top = (rect.top + offsetY) + 'px'
+        colorPicker.style.left = (rect.left + elementColor.offsetWidth + offsetX) + 'px'
+    } else {
+        colorPicker.style.top = (pointerY + offsetY) + 'px'
+        colorPicker.style.left = (pointerX + offsetX) + 'px'
+    }
 
     for (let i = 0; i < document.getElementsByClassName('color').length; i++)
         document.getElementsByClassName('color')[i].classList.remove('active')
@@ -190,6 +198,19 @@ function App() {
         if(document.getElementById('colorpicker') && (e.target.classList.contains('color') !== true && e.target.className.indexOf('react-colorful') < 0)) {
             document.getElementById('colorpicker').style.display = 'none'
         }
+    })
+
+    window.addEventListener('resize', (e) => {
+        const elementColor = document.getElementsByClassName('color').length > 0 ? document.getElementsByClassName('color')[targetColorId] : null
+        const rect = elementColor.getBoundingClientRect()
+
+        const colorPicker = document.getElementById('colorpicker')
+    
+        const offsetY = 15
+        const offsetX = 15
+    
+        colorPicker.style.top = (rect.top + offsetY) + 'px'
+        colorPicker.style.left = (rect.left + elementColor.offsetWidth + offsetX) + 'px'
     })
 
     return (
@@ -232,9 +253,9 @@ function App() {
                                     <button className='border-2 border-blurple p-1 px-3 text-snow bg-blurple rounded-md font-radiocanada font-semibold'>Download</button>
                                 </div>
                             </div>
-                            <div className='colors overflow-auto max-h-[250px]'>
+                            <div className='colors overflow-auto max-h-[250px]' onMouseMove={getPointerPos}>
                                 <div id="colors" className="grid grid-cols-3 gap-2 mr-5 child:border-2 child:border-blurple child:rounded-md">
-                                    { colors.map(({ color, id }, i) => i > 0 ? <Color colorstart = { color } key = { Math.floor(Math.random() * 999999999) } id = { i } colorChange = { colorChange } /> : null) }
+                                    { colors.map(({ color, id }, i) => i > -1 ? <Color colorstart = { color } key = { Math.floor(Math.random() * 999999999) } id = { i } colorChange = { colorChange } /> : null) }
                                 </div>
                             </div>
                         </div>
