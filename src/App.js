@@ -21,6 +21,8 @@ import './tailwind/compiled.css'
 let changePalette, targetColorId, targetChangeColor, skin, changeSkin, colorsused, setPalette
 let changing = false
 
+const skinSize = 64
+
 function componentToHex(c){
     var hex = c.toString(16);
     return hex.length === 1 ? "0" + hex : hex;
@@ -55,13 +57,13 @@ function getPalette(image){ // when get of colors, colors will be replaced with 
                 color.push(image.data[(i * image.width + j) * 4 + k])
             }
 
-            // if (color[3] == 0) continue
+            pixelCount++
+            if (color[3] == 0) continue
 
             const hex = rgbToHex(color)
-            pixelCount++
 
             for (let clr of allcolors) if (clr.color === hex) {clr.pixels.push(pixelCount); continue imgLoop}
-            allcolors.push({id: allcolors.length, color: (color[3] != null) ? hex : null, rgb: color, pixels: [pixelCount]})
+            allcolors.push({id: allcolors.length, color: hex, rgb: color, pixels: [pixelCount]})
         }
     }
     allcolors.sort((clr1, clr2) => clr2.pixels.length - clr1.pixels.length)
@@ -72,24 +74,17 @@ function getPalette(image){ // when get of colors, colors will be replaced with 
 const getBitMap = (palette) => {
     const bitmap = []
     // getPixel(i)['rgb'].map((x) => // console.log(x))
-    for (let i = 0; i < getPaletteSize(palette); i++)
+    for (let i = 0; i < Math.pow(skinSize, 2); i++)
         getPixel(i, palette).rgb.map((x) => {bitmap.push(x)})
     // console.log(bitmap)
     return bitmap
-}
-
-const getPaletteSize = (palette) => {
-    let size = 0
-    for (let i = 0; i < palette.length; i++)
-        size += palette[i].pixels.length
-    return size
 }
 
 const getPixel = (pixel, palette) => {
     for (let i = 0; i < palette.length; i++)
         for (let j = 0; j < palette[i].pixels.length; j++)
             if (palette[i].pixels[j] == pixel) return palette[i]
-    return null
+    return { color: '#000000', rgb: [0, 0, 0, 0] }
 }
 
 const colorChange = (id, start, changeColor) => {
@@ -132,6 +127,8 @@ const colorChange = (id, start, changeColor) => {
                 if (datanew.data.set) datanew.data.set(bitmap)
                 else bitmap.forEach((val,i) => datanew.data[i] = val)
                 ctx.putImageData(datanew, 0, 0)
+                // console.log(cvs.toDataURL())
+                // console.log(colorsused)
                 changeSkin(cvs.toDataURL())
                 // console.log(colorsused)
                 targetChangeColor(changingColor)
@@ -234,7 +231,7 @@ function App() {
                             </div>
                             <div className='colors overflow-auto max-h-[250px]'>
                                 <div id="colors" className="grid grid-cols-3 gap-2 mr-5 child:border-2 child:border-blurple child:rounded-md">
-                                    { colors.map(({ color, id }, i) => i > 0 ? <Color colorstart = { color } key = { Math.floor(Math.random() * 999999999) } id = { i } colorChange = { colorChange } /> : null) }
+                                    { colors.map(({ color, id }, i) => i > -1 ? <Color colorstart = { color } key = { Math.floor(Math.random() * 999999999) } id = { i } colorChange = { colorChange } /> : null) }
                                 </div>
                             </div>
                         </div>

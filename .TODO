@@ -1,5 +1,4 @@
 Color Picker:
-    non memorizzare anche i nulli
     onscreenchange color picker si muove presso il color div (quello con classe attiva)
     fix quando sta troppo sotto
 
