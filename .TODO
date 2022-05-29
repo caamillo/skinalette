@@ -7,6 +7,7 @@ CSS:
     Responsive (max-width, min-width) to grid
 
 Useful:
+    Remove react strict mode
     Warning when the image has more then { NUM } colors - [ !Warning! We suggest not to use skins with large palettes. ]
 
 Tool [POST-RELEASE]:
