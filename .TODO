@@ -1,20 +1,20 @@
-Color Picker:
-    non memorizzare anche i nulli
-    onscreenchange color picker si muove presso il color div (quello con classe attiva)
-    fix quando sta troppo sotto
+Colors:
+    Double OutLine (White and Blurple)
+    Only show colors in the viewport OR fade in perc the colors not in the viewport (change alpha to opacity)
 
 CSS:
+    Grid Gradient
     Responsive (max-width, min-width) to grid
 
-Tool:
-    Upload Skin with session name folder
-    every tot seconds if user offline then delete the folder
+Useful:
+    Remove react strict mode
+    Warning when the image has more then { NUM } colors - [ !Warning! We suggest not to use skins with large palettes. ]
+
+Tool [POST-RELEASE]:
+    SkinView3D Skin Rotate
     Merge Palettes
         Repeat Types: 
             Repeat,
             Repeat All,
-            and No Repeat,
+            No Repeat,
             provare a fare che trova pure colori complementari nel merge (da fare check)
-
-NPM:
-    Check if replace-color works
