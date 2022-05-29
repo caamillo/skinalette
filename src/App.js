@@ -43,9 +43,7 @@ function hexToRgb(hex) {
      ] : null;
   }
 
-// const rgba2hex = (rgba) => `#${rgba.match(/^rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*(\d+\.{0,1}\d*))?\)$/).slice(1).map((n, i) => (i === 3 ? Math.round(parseFloat(n) * 255) : parseFloat(n)).toString(16).padStart(2, '0').replace('NaN', '')).join('')}`
-
-function getPalette(image){ // when get of colors, colors will be replaced with another, find another way to do that. (Selections)
+function getPalette(image){
     const allcolors = []
     var pixelCount = -1
     for(let i = 0; i < image.height; i++){
@@ -187,6 +185,10 @@ function App() {
         if(document.getElementById('colorpicker') && (e.target.classList.contains('color') !== true && e.target.className.indexOf('react-colorful') < 0)) {
             document.getElementById('colorpicker').style.display = 'none'
         }
+    })
+
+    window.addEventListener('resize', (e) => {
+        // build colorPicker
     })
 
     return (

@@ -6,14 +6,9 @@ CSS:
     Responsive (max-width, min-width) to grid
 
 Tool:
-    Upload Skin with session name folder
-    every tot seconds if user offline then delete the folder
     Merge Palettes
         Repeat Types: 
             Repeat,
             Repeat All,
             and No Repeat,
             provare a fare che trova pure colori complementari nel merge (da fare check)
-
-NPM:
-    Check if replace-color works
