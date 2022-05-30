@@ -1,5 +1,6 @@
 ColorPicker:
     choose HexColor (only show in color exists [ if text has length of 3 then repeat next 3 char, if 6 then no repeat ])
+    se clicchi nel viewer non chiuderti pezzo di merda bastardo
 
 Colors:
     Double OutLine (White and Blurple)

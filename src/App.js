@@ -176,9 +176,7 @@ function App() {
     const [colors, setColors] = useState(palette !== null ? palette : [])
     const [colorpicker,setColorPicker] = useState(null)
     const [inputskin, setInputSkin] = useState(localStorage.getItem('skin') !== null ? localStorage.getItem('skin') : testskin)
-    const [skinViewer, setSkinViewer] = useState(null)
     const [orbit, setOrbit] = useState(null)
-    const [camera, setCamera] = useState(null)
 
     const inputFile = useRef(null) // rename as inputSkin
 
@@ -194,25 +192,18 @@ function App() {
     })
 
     useEffect(() => {
-        console.log('cambiattooo')
-    }, [camera])
-
-    useEffect(() => {
         async function getPixels(){
-            // console.log('changed input skin')
             if (JSON.parse(localStorage.getItem('palette')) === null) setColors(getPalette(await pixels(inputskin)))
-            // console.log(colors)
         }
         const canvasSkin = document.getElementById("skin-container")
-        console.log('animation')
         canvasSkin.animate(
             [
                 { opacity: 0 },
                 { opacity: 1 }
             ],
-            { duration: 1000 }
+            { duration: 1E3 }
         )
-        const viewer = new FXAASkinViewer({
+        const skinViewer = new FXAASkinViewer({
             canvas: canvasSkin,
             width: 300,
             height: 300,
@@ -222,17 +213,16 @@ function App() {
         let control = null
         if (orbit != null) {
             control = orbit
-            control.object = viewer.camera
+            control.object = skinViewer.camera
             control.reset()
         } else {
-            control = createOrbitControls(viewer)
+            control = createOrbitControls(skinViewer)
             control.rotateSpeed = 0.7
             control.enableZoom = false;
             control.enablePan = false;
             setOrbit(control)
         }
-        viewer.animations.add(IdleAnimation)
-        setSkinViewer(viewer)
+        skinViewer.animations.add(IdleAnimation)
         getPixels()
         changePalette = setColorPicker
         skin = inputskin
@@ -242,7 +232,8 @@ function App() {
     }, [inputskin])
 
     document.documentElement.addEventListener('click', (e) => {
-        if(document.getElementById('colorpicker') && (e.target.classList.contains('color') !== true && e.target.className.indexOf('react-colorful') < 0)) {
+        const parent = document.getElementById('colorpicker')
+        if(document.getElementById('colorpicker') && (e.target.classList.contains('color') !== true && parent.contains(e.target) !== true && e.target.id !== 'skin-container')) {
             document.getElementById('colorpicker').style.display = 'none'
         }
     })
@@ -263,7 +254,19 @@ function App() {
     return (
         <div id="container">
             <div id="colorpicker" className="absolute" style={{display: 'none'}}>
-                { colorpicker }
+                <div id="board" className='flex bg-[#fff] p-5 rounded-md shadow-xl shadow-blurple/50 space-x-5'>
+                    { colorpicker }
+                    <div id="color-content" className='space-y-3'>
+                        <div id="hexform">
+                            <label htmlFor="hex" className='block text-blurple font-radiocanada font-medium text-lg'>Hex</label>
+                            <input type="text" id="hex" placeholder='#' name="hex" className='bloc border-2 border-blurple rounded-md focus:outline-none text-lightblurple text-lg p-1 pl-3'/>
+                        </div>
+                        <div id="rgbform">
+                            <label htmlFor="rgb" className='block text-blurple font-radiocanada font-medium text-lg'>Rgb</label>
+                            <input type="text" id="rgb" placeholder='( 0, 0, 0 )' name="rgb" className='block border-2 border-blurple rounded-md focus:outline-none text-lightblurple text-lg p-1 pl-3'/>
+                        </div>
+                    </div>
+                </div>
             </div>
             <nav className="absolute left-0 right-0 container mx-auto p-6">
                 <div className="flex items-center justify-between">
@@ -279,7 +282,7 @@ function App() {
                         <div className="content flex items-center">
                             <div className="avatar">
                                 <div className="render">
-                                    <canvas id='skin-container' className='skin-container'/>
+                                    <canvas id='skin-container'/>
                                 </div>
                                 <div className="change flex items-center justify-center mb-5 space-x-2">
                                     <input type='file' ref={ inputFile } onChange={ (e) => {
