@@ -1,3 +1,6 @@
+ColorPicker:
+    choose HexColor (only show in color exists [ if text has length of 3 then repeat next 3 char, if 6 then no repeat ])
+
 Colors:
     Double OutLine (White and Blurple)
     Only show colors in the viewport OR fade in perc the colors not in the viewport (change alpha to opacity)
@@ -6,15 +9,26 @@ CSS:
     Grid Gradient
     Responsive (max-width, min-width) to grid
 
+About:
+    write about
+        whats skinalette?
+        who am I?
+    fix navbar
+
+Style:
+    logo of colorpicker before Skinalette
+    when mousehover animation "alette" where a colorpicker takes randomly color from a very tiny [ absolute ] color picker
+
 Useful:
     Remove react strict mode
+    Change primary, secondary, tertiary colors with skin's palette colors and change the page
     Warning when the image has more then { NUM } colors - [ !Warning! We suggest not to use skins with large palettes. ]
 
 Tool [POST-RELEASE]:
-    SkinView3D Skin Rotate
     Merge Palettes
         Repeat Types: 
             Repeat,
             Repeat All,
             No Repeat,
+            Random,
             provare a fare che trova pure colori complementari nel merge (da fare check)
