@@ -21,7 +21,7 @@ import Color from './components/Color'
 // Tailwind
 import './tailwind/compiled.css'
 
-let changePalette, targetColorId, targetChangeColor, skin, changeSkin, colorsused, setPalette
+let changePalette, targetColorId, targetChangeColor, skin, changeSkin, colorsused, setPalette, colorToChoose, changeColorToChoose
 let changing = false
 
 let pointerX, pointerY
@@ -95,57 +95,80 @@ const getPixel = (pixel, palette) => {
     return { color: '#000000', rgb: [0, 0, 0, 0] }
 }
 
+const inputChangeColor = (e) => {
+    let color = null
+    if (e.target.id == 'hex') {
+        color = ('#' + e.target.value.slice(1, 7)).toUpperCase()
+        e.target.value = color
+        const reg = /^#[0-9A-F]{6}$/
+        if (!reg.test(color)) return null
+        changeView(color)
+    } else {
+        let test = e.target.value.split(', ')
+        // check if theres a char in the array
+        test = test.map(x => {x.replace(/[^\d]/g, '')}) // fix (min 255 each value)
+        e.target.value = test.join(', ')
+        // console.log(rgbToHex(parseInt(test)))
+    }
+    if (color === null) return null
+    changePalette(
+        <HexColorPicker color = { color } onChange={ (changingColor) => changeView(changingColor) }/>
+    )
+}
+
+const changeView = (changingColor) => {
+    changing = true
+    changeColorToChoose(changingColor)
+    var cvs = document.createElement('canvas')
+    var img = new Image()
+    img.src = skin
+    img.onload = () => {
+        cvs.width = img.width
+        cvs.height = img.height
+        var ctx = cvs.getContext('2d')
+        ctx.drawImage(img, 0, 0)
+        var imageData = ctx.getImageData(0, 0, img.width, img.height)
+        var data = imageData.data
+        try{
+            if (colorsused.length == 0) colorsused = (JSON.parse(localStorage.getItem('palette')) === null) ? getPalette({
+                width: img.width,
+                height: img.height,
+                data: data
+            }) : JSON.parse(localStorage.getItem('palette'))
+        }catch(Error){
+            colorsused = getPalette({
+                width: img.width,
+                height: img.height,
+                data: data
+            })
+        }
+        // console.log(colorsused)
+        colorsused[targetColorId].color = changingColor
+        colorsused[targetColorId].rgb = hexToRgb(changingColor)
+        const bitmap = getBitMap(colorsused)
+        const datanew = ctx.createImageData(img.width, img.height)
+        if (datanew.data.set) datanew.data.set(bitmap)
+        else bitmap.forEach((val,i) => datanew.data[i] = val)
+        ctx.putImageData(datanew, 0, 0)
+        // console.log(cvs.toDataURL())
+        // console.log(colorsused)
+        changeSkin(cvs.toDataURL())
+        // console.log(colorsused)
+        targetChangeColor(changingColor)
+        setPalette(colorsused)
+        localStorage.setItem('skin', cvs.toDataURL())
+        localStorage.setItem('palette', JSON.stringify(colorsused))
+        changing = false
+    }
+}
+
 const colorChange = (id, start, changeColor) => {
     const elementColor = document.getElementsByClassName('color')[id]
-
     targetColorId = id
     targetChangeColor = changeColor
-
+    changeColorToChoose(start)
     changePalette(
-        <HexColorPicker color = { start } onChange={ async (changingColor) => {
-            changing = true
-            var cvs = document.createElement('canvas')
-            var img = new Image()
-            img.src = skin
-            img.onload = () => {
-                cvs.width = img.width
-                cvs.height = img.height
-                var ctx = cvs.getContext('2d')
-                ctx.drawImage(img, 0, 0)
-                var imageData = ctx.getImageData(0, 0, img.width, img.height)
-                var data = imageData.data
-                try{
-                    if (colorsused.length == 0) colorsused = (JSON.parse(localStorage.getItem('palette')) === null) ? getPalette({
-                        width: img.width,
-                        height: img.height,
-                        data: data
-                    }) : JSON.parse(localStorage.getItem('palette'))
-                }catch(Error){
-                    colorsused = getPalette({
-                        width: img.width,
-                        height: img.height,
-                        data: data
-                    })
-                }
-                // console.log(colorsused)
-                colorsused[id].color = changingColor
-                colorsused[id].rgb = hexToRgb(changingColor)
-                const bitmap = getBitMap(colorsused)
-                const datanew = ctx.createImageData(img.width, img.height)
-                if (datanew.data.set) datanew.data.set(bitmap)
-                else bitmap.forEach((val,i) => datanew.data[i] = val)
-                ctx.putImageData(datanew, 0, 0)
-                // console.log(cvs.toDataURL())
-                // console.log(colorsused)
-                changeSkin(cvs.toDataURL())
-                // console.log(colorsused)
-                targetChangeColor(changingColor)
-                setPalette(colorsused)
-                localStorage.setItem('skin', cvs.toDataURL())
-                localStorage.setItem('palette', JSON.stringify(colorsused))
-                changing = false
-            }
-        } } />
+        <HexColorPicker color = { start } onChange={ (changingColor) => changeView(changingColor) }/>
     )
 
     const colorPicker = document.getElementById('colorpicker')
@@ -177,12 +200,18 @@ function App() {
     const [colorpicker,setColorPicker] = useState(null)
     const [inputskin, setInputSkin] = useState(localStorage.getItem('skin') !== null ? localStorage.getItem('skin') : testskin)
     const [orbit, setOrbit] = useState(null)
+    const [choseColor, setChoseColor] = useState(null)
+    const inputFile = useRef(null)
 
-    const inputFile = useRef(null) // rename as inputSkin
-
-    /*useEffect(() => {
-        colorsused = colors
-    },[colors])*/
+    useEffect(() => {
+        if (choseColor != null) {
+            let rgb = hexToRgb(choseColor)
+            rgb.pop()
+            rgb = rgb.join(', ')
+            document.getElementById('hex').value = choseColor.toUpperCase()
+            document.getElementById('rgb').value = rgb
+        }
+    }, [choseColor])
 
     useEffect(() => {
         const t = setInterval(() => {
@@ -229,6 +258,8 @@ function App() {
         changeSkin = setInputSkin
         colorsused = colors
         setPalette = setColors
+        colorToChoose = choseColor
+        changeColorToChoose = setChoseColor
     }, [inputskin])
 
     document.documentElement.addEventListener('click', (e) => {
@@ -259,11 +290,11 @@ function App() {
                     <div id="color-content" className='space-y-3'>
                         <div id="hexform">
                             <label htmlFor="hex" className='block text-blurple font-radiocanada font-medium text-lg'>Hex</label>
-                            <input type="text" id="hex" placeholder='#' name="hex" className='bloc border-2 border-blurple rounded-md focus:outline-none text-lightblurple text-lg p-1 pl-3'/>
+                            <input type="text" id="hex" onChange={ inputChangeColor } placeholder='#' name="hex" className='bloc border-2 border-blurple rounded-md focus:outline-none text-lightblurple text-lg p-1 pl-3'/>
                         </div>
                         <div id="rgbform">
                             <label htmlFor="rgb" className='block text-blurple font-radiocanada font-medium text-lg'>Rgb</label>
-                            <input type="text" id="rgb" placeholder='( 0, 0, 0 )' name="rgb" className='block border-2 border-blurple rounded-md focus:outline-none text-lightblurple text-lg p-1 pl-3'/>
+                            <input type="text" id="rgb" onChange={ inputChangeColor } placeholder='0, 0, 0' name="rgb" className='block border-2 border-blurple rounded-md focus:outline-none text-lightblurple text-lg p-1 pl-3'/>
                         </div>
                     </div>
                 </div>
