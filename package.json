@@ -12,7 +12,8 @@
     "react-colorful": "^5.5.1",
     "react-dom": "^18.1.0",
     "react-scripts": "5.0.1",
-    "react-skinview3d": "^3.0.1"
+    "skinview3d": "^2.2.1",
+    "three": "^0.141.0"
   },
   "scripts": {
     "start": "react-scripts start",

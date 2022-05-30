@@ -4,20 +4,23 @@ import { useEffect, useState, useRef } from 'react'
 // CSS
 import './css/scrollbar.css'
 import './css/menu.css'
+import './css/animation.css'
 
 // Media
 import testskin from './img/input.png'
 
 // NPM
 import pixels from 'image-pixels'
-import Skinview3d from 'react-skinview3d'
+import { IdleAnimation, createOrbitControls, FXAASkinViewer } from 'skinview3d';
 import { HexColorPicker } from "react-colorful"
+import * as THREE from "three";
 
 // Components
 import Color from './components/Color'
 
 // Tailwind
 import './tailwind/compiled.css'
+
 let changePalette, targetColorId, targetChangeColor, skin, changeSkin, colorsused, setPalette
 let changing = false
 
@@ -173,6 +176,9 @@ function App() {
     const [colors, setColors] = useState(palette !== null ? palette : [])
     const [colorpicker,setColorPicker] = useState(null)
     const [inputskin, setInputSkin] = useState(localStorage.getItem('skin') !== null ? localStorage.getItem('skin') : testskin)
+    const [skinViewer, setSkinViewer] = useState(null)
+    const [orbit, setOrbit] = useState(null)
+    const [camera, setCamera] = useState(null)
 
     const inputFile = useRef(null) // rename as inputSkin
 
@@ -181,11 +187,52 @@ function App() {
     },[colors])*/
 
     useEffect(() => {
+        const t = setInterval(() => {
+            orbit.saveState()
+        }, 1E3)
+        return () => clearInterval(t)
+    })
+
+    useEffect(() => {
+        console.log('cambiattooo')
+    }, [camera])
+
+    useEffect(() => {
         async function getPixels(){
             // console.log('changed input skin')
             if (JSON.parse(localStorage.getItem('palette')) === null) setColors(getPalette(await pixels(inputskin)))
             // console.log(colors)
         }
+        const canvasSkin = document.getElementById("skin-container")
+        console.log('animation')
+        canvasSkin.animate(
+            [
+                { opacity: 0 },
+                { opacity: 1 }
+            ],
+            { duration: 1000 }
+        )
+        const viewer = new FXAASkinViewer({
+            canvas: canvasSkin,
+            width: 300,
+            height: 300,
+            skin: inputskin,
+            background: '#FEF9FF'
+        })
+        let control = null
+        if (orbit != null) {
+            control = orbit
+            control.object = viewer.camera
+            control.reset()
+        } else {
+            control = createOrbitControls(viewer)
+            control.rotateSpeed = 0.7
+            control.enableZoom = false;
+            control.enablePan = false;
+            setOrbit(control)
+        }
+        viewer.animations.add(IdleAnimation)
+        setSkinViewer(viewer)
         getPixels()
         changePalette = setColorPicker
         skin = inputskin
@@ -232,7 +279,7 @@ function App() {
                         <div className="content flex items-center">
                             <div className="avatar">
                                 <div className="render">
-                                    { inputskin && <Skinview3d skinUrl = { inputskin } height = "300" width = "300" /> }
+                                    <canvas id='skin-container' className='skin-container'/>
                                 </div>
                                 <div className="change flex items-center justify-center mb-5 space-x-2">
                                     <input type='file' ref={ inputFile } onChange={ (e) => {
