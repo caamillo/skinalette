@@ -1,10 +1,6 @@
 Viewer:
     guarda se ci sta bene il fadeout mentre cambi
 
-ColorPicker:
-    choose HexColor (only show in color exists [ if text has length of 3 then repeat next 3 char, if 6 then no repeat ])
-    onChange text, it changes the hex/rgb and sanitizes the text
-
 Colors:
     Double OutLine (White and Blurple)
     Only show colors in the viewport OR fade in perc the colors not in the viewport (change alpha to opacity)
