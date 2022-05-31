@@ -13,7 +13,6 @@ import testskin from './img/input.png'
 import pixels from 'image-pixels'
 import { IdleAnimation, createOrbitControls, FXAASkinViewer } from 'skinview3d';
 import { HexColorPicker } from "react-colorful"
-import * as THREE from "three";
 
 // Components
 import Color from './components/Color'
@@ -312,7 +311,7 @@ function App() {
             </nav>
             <section id="home" className='flex items-center justify-center w-screen h-screen'>
                     <div id="skincard" className='border-2 rounded border-blurple'>
-                        <div className="content flex items-center">
+                        <div className="content md:flex md:items-center block">
                             <div className="avatar">
                                 <div className="render">
                                     <canvas id='skin-container'/>
@@ -336,8 +335,8 @@ function App() {
                                     <button className='border-2 border-blurple p-1 px-3 text-snow bg-blurple rounded-md font-radiocanada font-semibold'>Download</button>
                                 </div>
                             </div>
-                            <div className='colors overflow-auto max-h-[250px]' onMouseMove={getPointerPos}>
-                                <div id="colors" className="grid grid-cols-3 gap-2 mr-5 child:border-2 child:border-blurple child:rounded-md">
+                            <div className='colors flex justify-center items-start md:block overflow-x-hidden overflow-auto m-5 h-[170px] md:h-auto md:max-h-[250px]' onMouseMove={getPointerPos}>
+                                <div id="colors" className="grid grid-cols-3 m-auto gap-2 md:pr-3 child:border-2 child:border-blurple child:rounded-md child:mx-auto">
                                     { colors.map(({ color, id }, i) => i > -1 ? <Color colorstart = { color } key = { Math.floor(Math.random() * 999999999) } id = { i } colorChange = { colorChange } /> : null) }
                                 </div>
                             </div>

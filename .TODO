@@ -1,13 +1,13 @@
+CSS:
+    Grid Gradient [ Up and Down ] White (when you have to scroll)
+    Color Picker Horizontal To Vertical (When Screen Changes)
+
 Viewer:
     guarda se ci sta bene il fadeout mentre cambi
 
 Colors:
     Double OutLine (White and Blurple)
     Only show colors in the viewport OR fade in perc the colors not in the viewport (change alpha to opacity)
-
-CSS:
-    Grid Gradient [ Up and Down ] White (when you have to scroll)
-    Responsive (max-width, min-width) to grid
 
 About:
     [ TRANSITION ]
