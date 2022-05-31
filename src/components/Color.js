@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-const Color = ({colorstart, id, colorChange}) => {
+const Color = ({ colorstart, id, colorChange }) => {
 
     const [color, setColor] = useState(colorstart)
 

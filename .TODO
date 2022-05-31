@@ -1,20 +1,36 @@
+CSS:
+    Grid Gradient [ Up and Down ] White (when you have to scroll)
+    Color Picker Horizontal To Vertical (When Screen Changes)
+
+Viewer:
+    guarda se ci sta bene il fadeout mentre cambi
+
 Colors:
     Double OutLine (White and Blurple)
     Only show colors in the viewport OR fade in perc the colors not in the viewport (change alpha to opacity)
 
-CSS:
-    Grid Gradient
-    Responsive (max-width, min-width) to grid
+About:
+    [ TRANSITION ]
+    write about
+        whats skinalette?
+        who am I?
+    fix navbar
+
+Style:
+    logo of colorpicker before Skinalette
+    when mousehover animation "alette" where a colorpicker takes randomly color from a very tiny [ absolute ] color picker
 
 Useful:
     Remove react strict mode
+    Undo (ctrl z) on changing palette color [ IDK ]
     Warning when the image has more then { NUM } colors - [ !Warning! We suggest not to use skins with large palettes. ]
 
 Tool [POST-RELEASE]:
-    SkinView3D Skin Rotate
+    Change primary, secondary, tertiary colors with skin's palette colors and change the page [ IDK ]
     Merge Palettes
         Repeat Types: 
             Repeat,
             Repeat All,
             No Repeat,
+            Random,
             provare a fare che trova pure colori complementari nel merge (da fare check)
