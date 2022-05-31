@@ -102,15 +102,17 @@ const inputChangeColor = (e) => {
         e.target.value = color
         const reg = /^#[0-9A-F]{6}$/
         if (!reg.test(color)) return null
-        changeView(color)
     } else {
-        let test = e.target.value.split(', ')
-        // check if theres a char in the array
-        test = test.map(x => {x.replace(/[^\d]/g, '')}) // fix (min 255 each value)
-        e.target.value = test.join(', ')
-        // console.log(rgbToHex(parseInt(test)))
+        const match = /(rgb)?\(? ?(\d{1,3})[ ,-\/|\\][ ,-\/|\\]?(\d{1,3})[ ,-\/|\\][ ,-\/|\\]?(\d{1,3}) ?\)?/
+        const res = match.exec(e.target.value)
+        if (res === null) return null
+        const resRgb = [res[2], res[3], res[4]].map((x) => parseInt(x))
+        if (resRgb.some((x) => x > 255 || x < 0)) return null
+        e.target.value = resRgb.join(', ')
+        color = rgbToHex(resRgb)
     }
     if (color === null) return null
+    changeView(color)
     changePalette(
         <HexColorPicker color = { color } onChange={ (changingColor) => changeView(changingColor) }/>
     )
