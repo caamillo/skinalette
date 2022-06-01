@@ -20,7 +20,7 @@ import Color from './components/Color'
 // Tailwind
 import './tailwind/compiled.css'
 
-let changePalette, targetColorId, targetChangeColor, skin, changeSkin, colorsused, setPalette, colorToChoose, changeColorToChoose
+let changePalette, targetColorId, targetChangeColor, skin, changeSkin, colorsused, setPalette, colorToChoose, changeColorToChoose, isNightOutside, setIsNightOutside
 let changing = false
 
 let pointerX, pointerY
@@ -116,6 +116,11 @@ const inputChangeColor = (e) => {
     changePalette(
         <HexColorPicker color = { color } onChange={ (changingColor) => changeView(changingColor) }/>
     )
+}
+
+const toggleNightMode = () => {
+    setIsNightOutside(!isNightOutside)
+    console.log(isNightOutside)
 }
 
 const changeView = (changingColor) => {
@@ -215,6 +220,7 @@ function App() {
     const [orbit, setOrbit] = useState(null)
     const [choseColor, setChoseColor] = useState(null)
     const [heightSkin, setHeightSkin] = useState(Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0) < mdSize ? 250 : 300)
+    const [isNight, setIsNight] = useState(false)
     const inputFile = useRef(null)
 
     useEffect(() => {
@@ -274,6 +280,8 @@ function App() {
         setPalette = setColors
         colorToChoose = choseColor
         changeColorToChoose = setChoseColor
+        isNightOutside = isNight
+        setIsNightOutside = setIsNight
     }, [inputskin, heightSkin])
 
     document.documentElement.addEventListener('click', (e) => {
@@ -331,6 +339,9 @@ function App() {
                     </div>
                 </div>
             </nav>
+            <div className="theme hidden absolute right-0 bottom-0">
+                <button onClick={() => toggleNightMode()} type='button' className='w-[50px] h-[50px] bg-blurple rounded-md m-5'>N</button>
+            </div>
             <section id="home" className='flex items-center justify-center w-screen h-screen'>
                     <div id="skincard" className='border-2 rounded border-blurple'>
                         <div className="content md:flex md:items-center block">
@@ -353,8 +364,11 @@ function App() {
                                         })
                                         reader.readAsDataURL(e.target.files[0])
                                     }} style={{ display: 'none' }}/>
-                                    <button onClick={ () => inputFile.current.click() } className='border-2 border-blurple p-1 px-5 text-blurple rounded-md font-radiocanada font-semibold'>Change</button>
-                                    <button className='border-2 border-blurple p-1 px-3 text-snow bg-blurple rounded-md font-radiocanada font-semibold'>Download</button>
+                                    <div className="buttons table-fixed">
+
+                                    </div>
+                                    <button type='button' onClick={ () => inputFile.current.click() } className='border-2 border-blurple p-1 px-5 text-blurple rounded-md font-radiocanada font-semibold'>Change</button>
+                                    <a download={Math.floor(Math.random() * 999999999) + '.png'} href={ inputskin } className='border-2 border-blurple p-1 px-3 text-snow bg-blurple rounded-md font-radiocanada font-semibold'>Download</a>
                                 </div>
                             </div>
                             <div className='colors flex justify-center items-start md:block overflow-x-hidden overflow-auto m-5 h-[170px] md:h-auto md:max-h-[250px]' onMouseMove={getPointerPos}>
