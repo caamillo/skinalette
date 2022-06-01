@@ -176,12 +176,19 @@ const colorChange = (id, start, changeColor) => {
     )
 
     const colorPicker = document.getElementById('colorpicker')
+    colorPicker.animate(
+        [
+            { opacity: 0 },
+            { opacity: 1 }
+        ],
+        { duration: 100 }
+    )
     const rect = elementColor.getBoundingClientRect()
     // log(colorPicker)
 
-    const offsetY = 15
-    const offsetX = 30 + ((pointerX >= vw / 2) && vw < mdSize ? -270 : 0)
-    console.log(pointerY)
+
+    const offsetY = 15 + (vw < mdSize ? -150 : 0)
+    const offsetX = 30 + (pointerX >= vw / 2 && vw < mdSize ? -270 : 0)
 
     if (pointerX === undefined || pointerY === undefined) {
         colorPicker.style.top = (rect.top + offsetY) + 'px'
@@ -289,8 +296,8 @@ function App() {
 
         const colorPicker = document.getElementById('colorpicker')
     
-        const offsetY = 15
-        const offsetX = 15 + ((pointerX >= vw / 2) && vw < mdSize ? -270 : 0)
+        const offsetY = 15 + (vw < mdSize ? -150 : 0)
+        const offsetX = 15 +  (pointerX >= vw / 2 && vw < mdSize ? -270 : 0)
 
         colorPicker.style.top = (rect.top + offsetY) + 'px' 
         colorPicker.style.left = (rect.left + elementColor.offsetWidth + offsetX) + 'px'
