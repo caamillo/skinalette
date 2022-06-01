@@ -26,6 +26,7 @@ let changing = false
 let pointerX, pointerY
 
 const skinSize = 64
+const mdSize = 800
 
 function componentToHex(c){
     var hex = c.toString(16);
@@ -164,10 +165,12 @@ const changeView = (changingColor) => {
 }
 
 const colorChange = (id, start, changeColor) => {
+    const vw = Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0)
     const elementColor = document.getElementsByClassName('color')[id]
     targetColorId = id
     targetChangeColor = changeColor
     changeColorToChoose(start)
+    
     changePalette(
         <HexColorPicker color = { start } onChange={ (changingColor) => changeView(changingColor) }/>
     )
@@ -177,7 +180,8 @@ const colorChange = (id, start, changeColor) => {
     // log(colorPicker)
 
     const offsetY = 15
-    const offsetX = 30
+    const offsetX = 30 + ((pointerX >= vw / 2) && vw < mdSize ? -270 : 0)
+    console.log(pointerY)
 
     if (pointerX === undefined || pointerY === undefined) {
         colorPicker.style.top = (rect.top + offsetY) + 'px'
@@ -195,6 +199,7 @@ const colorChange = (id, start, changeColor) => {
     colorPicker.style.display = 'block'
 }
 
+
 function App() { 
     const palette = JSON.parse(localStorage.getItem('palette'))
     const [colors, setColors] = useState(palette !== null ? palette : [])
@@ -202,6 +207,7 @@ function App() {
     const [inputskin, setInputSkin] = useState(localStorage.getItem('skin') !== null ? localStorage.getItem('skin') : testskin)
     const [orbit, setOrbit] = useState(null)
     const [choseColor, setChoseColor] = useState(null)
+    const [heightSkin, setHeightSkin] = useState(Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0) < mdSize ? 250 : 300)
     const inputFile = useRef(null)
 
     useEffect(() => {
@@ -236,7 +242,7 @@ function App() {
         const skinViewer = new FXAASkinViewer({
             canvas: canvasSkin,
             width: 300,
-            height: 300,
+            height: heightSkin,
             skin: inputskin,
             background: '#FEF9FF'
         })
@@ -261,7 +267,7 @@ function App() {
         setPalette = setColors
         colorToChoose = choseColor
         changeColorToChoose = setChoseColor
-    }, [inputskin])
+    }, [inputskin, heightSkin])
 
     document.documentElement.addEventListener('click', (e) => {
         const parent = document.getElementById('colorpicker')
@@ -270,32 +276,41 @@ function App() {
         }
     })
 
-    window.addEventListener('resize', (e) => {
+    window.addEventListener('resize', () => {
+        const vw = Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0)
+        if (vw < mdSize && heightSkin !== 250) setHeightSkin(250)
+        else if (vw >= mdSize && heightSkin !== 300) setHeightSkin(300)
+
         const elementColor = document.getElementsByClassName('color').length > 0 ? document.getElementsByClassName('color')[targetColorId] : null
+
+        if (elementColor == null) return
+
         const rect = elementColor.getBoundingClientRect()
 
         const colorPicker = document.getElementById('colorpicker')
     
         const offsetY = 15
-        const offsetX = 15
-    
-        colorPicker.style.top = (rect.top + offsetY) + 'px'
+        const offsetX = 15 + ((pointerX >= vw / 2) && vw < mdSize ? -270 : 0)
+
+        colorPicker.style.top = (rect.top + offsetY) + 'px' 
         colorPicker.style.left = (rect.left + elementColor.offsetWidth + offsetX) + 'px'
     })
 
     return (
         <div id="container">
             <div id="colorpicker" className="absolute" style={{display: 'none'}}>
-                <div id="board" className='flex bg-[#fff] p-5 rounded-md shadow-xl shadow-blurple/50 space-x-5'>
-                    { colorpicker }
+                <div id="board" className='md:flex block bg-[#fff] md:p-5 p-4 rounded-md shadow-xl shadow-blurple/50 space-y-3 md:space-x-5 md:space-y-0'>
+                    <div className='flex justify-center items-center child:w-[180px] child:h-[150px] md:child:w-[200px] md:child:h-[200px]'>
+                        { colorpicker }
+                    </div>
                     <div id="color-content" className='space-y-3'>
                         <div id="hexform">
-                            <label htmlFor="hex" className='block text-blurple font-radiocanada font-medium text-lg'>Hex</label>
-                            <input type="text" id="hex" onChange={ inputChangeColor } placeholder='#' name="hex" className='bloc border-2 border-blurple rounded-md focus:outline-none text-lightblurple text-lg p-1 pl-3'/>
+                            <label htmlFor="hex" className='block text-blurple font-radiocanada font-medium text-sm md:text-lg'>Hex</label>
+                            <input type="text" id="hex" onChange={ inputChangeColor } placeholder='#' name="hex" className='bloc border-2 border-blurple rounded-md focus:outline-none text-lightblurple text-sm md:text-lg p-1 pl-3'/>
                         </div>
-                        <div id="rgbform">
-                            <label htmlFor="rgb" className='block text-blurple font-radiocanada font-medium text-lg'>Rgb</label>
-                            <input type="text" id="rgb" onChange={ inputChangeColor } placeholder='0, 0, 0' name="rgb" className='block border-2 border-blurple rounded-md focus:outline-none text-lightblurple text-lg p-1 pl-3'/>
+                        <div id="rgbform" className='hidden md:block'>
+                            <label htmlFor="rgb" className='block text-blurple font-radiocanada font-medium text-sm md:text-lg'>Rgb</label>
+                            <input type="text" id="rgb" onChange={ inputChangeColor } placeholder='0, 0, 0' name="rgb" className='block border-2 border-blurple rounded-md focus:outline-none text-lightblurple text-sm md:text-lg p-1 pl-3'/>
                         </div>
                     </div>
                 </div>
