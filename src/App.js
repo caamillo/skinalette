@@ -20,12 +20,13 @@ import Color from './components/Color'
 // Tailwind
 import './tailwind/compiled.css'
 
-let changePalette, targetColorId, targetChangeColor, skin, changeSkin, colorsused, setPalette, colorToChoose, changeColorToChoose
+let changePalette, targetColorId, targetChangeColor, skin, changeSkin, colorsused, setPalette, colorToChoose, changeColorToChoose, isNightOutside, setIsNightOutside
 let changing = false
 
 let pointerX, pointerY
 
 const skinSize = 64
+const mdSize = 800
 
 function componentToHex(c){
     var hex = c.toString(16);
@@ -117,6 +118,11 @@ const inputChangeColor = (e) => {
     )
 }
 
+const toggleNightMode = () => {
+    setIsNightOutside(!isNightOutside)
+    console.log(isNightOutside)
+}
+
 const changeView = (changingColor) => {
     changing = true
     changeColorToChoose(changingColor)
@@ -164,20 +170,30 @@ const changeView = (changingColor) => {
 }
 
 const colorChange = (id, start, changeColor) => {
+    const vw = Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0)
     const elementColor = document.getElementsByClassName('color')[id]
     targetColorId = id
     targetChangeColor = changeColor
     changeColorToChoose(start)
+    
     changePalette(
         <HexColorPicker color = { start } onChange={ (changingColor) => changeView(changingColor) }/>
     )
 
     const colorPicker = document.getElementById('colorpicker')
+    colorPicker.animate(
+        [
+            { opacity: 0 },
+            { opacity: 1 }
+        ],
+        { duration: 100 }
+    )
     const rect = elementColor.getBoundingClientRect()
     // log(colorPicker)
 
-    const offsetY = 15
-    const offsetX = 30
+
+    const offsetY = 15 + (vw < mdSize ? -150 : 0)
+    const offsetX = 30 + (pointerX >= vw / 2 && vw < mdSize ? -270 : 0)
 
     if (pointerX === undefined || pointerY === undefined) {
         colorPicker.style.top = (rect.top + offsetY) + 'px'
@@ -195,6 +211,7 @@ const colorChange = (id, start, changeColor) => {
     colorPicker.style.display = 'block'
 }
 
+
 function App() { 
     const palette = JSON.parse(localStorage.getItem('palette'))
     const [colors, setColors] = useState(palette !== null ? palette : [])
@@ -202,6 +219,8 @@ function App() {
     const [inputskin, setInputSkin] = useState(localStorage.getItem('skin') !== null ? localStorage.getItem('skin') : testskin)
     const [orbit, setOrbit] = useState(null)
     const [choseColor, setChoseColor] = useState(null)
+    const [heightSkin, setHeightSkin] = useState(Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0) < mdSize ? 250 : 300)
+    const [isNight, setIsNight] = useState(false)
     const inputFile = useRef(null)
 
     useEffect(() => {
@@ -236,7 +255,7 @@ function App() {
         const skinViewer = new FXAASkinViewer({
             canvas: canvasSkin,
             width: 300,
-            height: 300,
+            height: heightSkin,
             skin: inputskin,
             background: '#FEF9FF'
         })
@@ -261,7 +280,9 @@ function App() {
         setPalette = setColors
         colorToChoose = choseColor
         changeColorToChoose = setChoseColor
-    }, [inputskin])
+        isNightOutside = isNight
+        setIsNightOutside = setIsNight
+    }, [inputskin, heightSkin])
 
     document.documentElement.addEventListener('click', (e) => {
         const parent = document.getElementById('colorpicker')
@@ -270,32 +291,41 @@ function App() {
         }
     })
 
-    window.addEventListener('resize', (e) => {
+    window.addEventListener('resize', () => {
+        const vw = Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0)
+        if (vw < mdSize && heightSkin !== 250) setHeightSkin(250)
+        else if (vw >= mdSize && heightSkin !== 300) setHeightSkin(300)
+
         const elementColor = document.getElementsByClassName('color').length > 0 ? document.getElementsByClassName('color')[targetColorId] : null
+
+        if (elementColor == null) return
+
         const rect = elementColor.getBoundingClientRect()
 
         const colorPicker = document.getElementById('colorpicker')
     
-        const offsetY = 15
-        const offsetX = 15
-    
-        colorPicker.style.top = (rect.top + offsetY) + 'px'
+        const offsetY = 15 + (vw < mdSize ? -150 : 0)
+        const offsetX = 15 +  (pointerX >= vw / 2 && vw < mdSize ? -270 : 0)
+
+        colorPicker.style.top = (rect.top + offsetY) + 'px' 
         colorPicker.style.left = (rect.left + elementColor.offsetWidth + offsetX) + 'px'
     })
 
     return (
         <div id="container">
             <div id="colorpicker" className="absolute" style={{display: 'none'}}>
-                <div id="board" className='flex bg-[#fff] p-5 rounded-md shadow-xl shadow-blurple/50 space-x-5'>
-                    { colorpicker }
+                <div id="board" className='md:flex block bg-[#fff] md:p-5 p-4 rounded-md shadow-xl shadow-blurple/50 space-y-3 md:space-x-5 md:space-y-0'>
+                    <div className='flex justify-center items-center child:w-[180px] child:h-[150px] md:child:w-[200px] md:child:h-[200px]'>
+                        { colorpicker }
+                    </div>
                     <div id="color-content" className='space-y-3'>
                         <div id="hexform">
-                            <label htmlFor="hex" className='block text-blurple font-radiocanada font-medium text-lg'>Hex</label>
-                            <input type="text" id="hex" onChange={ inputChangeColor } placeholder='#' name="hex" className='bloc border-2 border-blurple rounded-md focus:outline-none text-lightblurple text-lg p-1 pl-3'/>
+                            <label htmlFor="hex" className='block text-blurple font-radiocanada font-medium text-sm md:text-lg'>Hex</label>
+                            <input type="text" id="hex" onChange={ inputChangeColor } placeholder='#' name="hex" className='bloc border-2 border-blurple rounded-md focus:outline-none text-lightblurple text-sm md:text-lg p-1 pl-3'/>
                         </div>
-                        <div id="rgbform">
-                            <label htmlFor="rgb" className='block text-blurple font-radiocanada font-medium text-lg'>Rgb</label>
-                            <input type="text" id="rgb" onChange={ inputChangeColor } placeholder='0, 0, 0' name="rgb" className='block border-2 border-blurple rounded-md focus:outline-none text-lightblurple text-lg p-1 pl-3'/>
+                        <div id="rgbform" className='hidden md:block'>
+                            <label htmlFor="rgb" className='block text-blurple font-radiocanada font-medium text-sm md:text-lg'>Rgb</label>
+                            <input type="text" id="rgb" onChange={ inputChangeColor } placeholder='0, 0, 0' name="rgb" className='block border-2 border-blurple rounded-md focus:outline-none text-lightblurple text-sm md:text-lg p-1 pl-3'/>
                         </div>
                     </div>
                 </div>
@@ -309,6 +339,9 @@ function App() {
                     </div>
                 </div>
             </nav>
+            <div className="theme hidden absolute right-0 bottom-0">
+                <button onClick={() => toggleNightMode()} type='button' className='w-[50px] h-[50px] bg-blurple rounded-md m-5'>N</button>
+            </div>
             <section id="home" className='flex items-center justify-center w-screen h-screen'>
                     <div id="skincard" className='border-2 rounded border-blurple'>
                         <div className="content md:flex md:items-center block">
@@ -331,8 +364,11 @@ function App() {
                                         })
                                         reader.readAsDataURL(e.target.files[0])
                                     }} style={{ display: 'none' }}/>
-                                    <button onClick={ () => inputFile.current.click() } className='border-2 border-blurple p-1 px-5 text-blurple rounded-md font-radiocanada font-semibold'>Change</button>
-                                    <button className='border-2 border-blurple p-1 px-3 text-snow bg-blurple rounded-md font-radiocanada font-semibold'>Download</button>
+                                    <div className="buttons table-fixed">
+
+                                    </div>
+                                    <button type='button' onClick={ () => inputFile.current.click() } className='border-2 border-blurple p-1 px-5 text-blurple rounded-md font-radiocanada font-semibold'>Change</button>
+                                    <a download={Math.floor(Math.random() * 999999999) + '.png'} href={ inputskin } className='border-2 border-blurple p-1 px-3 text-snow bg-blurple rounded-md font-radiocanada font-semibold'>Download</a>
                                 </div>
                             </div>
                             <div className='colors flex justify-center items-start md:block overflow-x-hidden overflow-auto m-5 h-[170px] md:h-auto md:max-h-[250px]' onMouseMove={getPointerPos}>
