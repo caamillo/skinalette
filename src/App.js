@@ -10,7 +10,6 @@ import './css/animation.css'
 import testskin from './img/input.png'
 
 // NPM
-import pixels from 'image-pixels'
 import { IdleAnimation, createOrbitControls, FXAASkinViewer } from 'skinview3d';
 import { HexColorPicker } from "react-colorful"
 
@@ -56,13 +55,15 @@ function getPointerPos(e){
 function getPalette(image){
     const allcolors = []
     var pixelCount = -1
-    for(let i = 0; i < image.height; i++){
+    const height = image.img.height
+    const width = image.img.width
+    for(let i = 0; i < height; i++){
         imgLoop:
-        for(let j = 0; j < image.width; j++){
+        for(let j = 0; j < width; j++){
             const color = []
 
             for(let k = 0; k < 4; k++) {
-                color.push(image.data[(i * image.width + j) * 4 + k])
+                color.push(image.data[(i * width + j) * 4 + k])
             }
 
             pixelCount++
@@ -123,50 +124,61 @@ const toggleNightMode = () => {
     console.log(isNightOutside)
 }
 
-const changeView = (changingColor) => {
-    changing = true
-    changeColorToChoose(changingColor)
-    var cvs = document.createElement('canvas')
-    var img = new Image()
-    img.src = skin
-    img.onload = () => {
-        cvs.width = img.width
-        cvs.height = img.height
-        var ctx = cvs.getContext('2d')
-        ctx.drawImage(img, 0, 0)
-        var imageData = ctx.getImageData(0, 0, img.width, img.height)
-        var data = imageData.data
-        try{
-            if (colorsused.length == 0) colorsused = (JSON.parse(localStorage.getItem('palette')) === null) ? getPalette({
-                width: img.width,
-                height: img.height,
-                data: data
-            }) : JSON.parse(localStorage.getItem('palette'))
-        }catch(Error){
-            colorsused = getPalette({
-                width: img.width,
-                height: img.height,
-                data: data
+const getImageData = (src) => {
+    const cvs = document.createElement('canvas')
+    const img = new Image()
+    img.src = src
+    return new Promise((resolve, reject) => {
+        img.onload = () => {
+            cvs.width = img.width
+            cvs.height = img.height
+            const ctx = cvs.getContext('2d')
+            ctx.drawImage(img, 0, 0)
+            const imageData = ctx.getImageData(0, 0, img.width, img.height)
+            resolve({
+                'data': imageData.data,
+                'img': img,
+                'cvs': cvs
             })
         }
-        // console.log(colorsused)
-        colorsused[targetColorId].color = changingColor
-        colorsused[targetColorId].rgb = hexToRgb(changingColor)
-        const bitmap = getBitMap(colorsused)
-        const datanew = ctx.createImageData(img.width, img.height)
-        if (datanew.data.set) datanew.data.set(bitmap)
-        else bitmap.forEach((val,i) => datanew.data[i] = val)
-        ctx.putImageData(datanew, 0, 0)
-        // console.log(cvs.toDataURL())
-        // console.log(colorsused)
-        changeSkin(cvs.toDataURL())
-        // console.log(colorsused)
-        targetChangeColor(changingColor)
-        setPalette(colorsused)
-        localStorage.setItem('skin', cvs.toDataURL())
-        localStorage.setItem('palette', JSON.stringify(colorsused))
-        changing = false
+    })
+}
+
+const changeView = async (changingColor) => {
+    changing = true
+    changeColorToChoose(changingColor)
+    const {data, img, cvs} = await getImageData(skin)
+    const ctx = cvs.getContext('2d')
+    try{
+        if (colorsused.length == 0) colorsused = (JSON.parse(localStorage.getItem('palette')) === null) ? getPalette({
+            width: img.width,
+            height: img.height,
+            data: data
+        }) : JSON.parse(localStorage.getItem('palette'))
+    }catch(Error){
+        colorsused = getPalette({
+            width: img.width,
+            height: img.height,
+            data: data
+        })
     }
+    // console.log(colorsused)
+    colorsused[targetColorId].color = changingColor
+    colorsused[targetColorId].rgb = hexToRgb(changingColor)
+    const bitmap = getBitMap(colorsused)
+    const datanew = ctx.createImageData(img.width, img.height)
+    if (datanew.data.set) datanew.data.set(bitmap)
+    else bitmap.forEach((val,i) => datanew.data[i] = val)
+    ctx.putImageData(datanew, 0, 0)
+    // console.log(cvs.toDataURL())
+    // console.log(colorsused)
+    changeSkin(cvs.toDataURL())
+    // console.log(colorsused)
+    targetChangeColor(changingColor)
+    setPalette(colorsused)
+    localStorage.setItem('skin', cvs.toDataURL())
+    localStorage.setItem('palette', JSON.stringify(colorsused))
+    changing = false
 }
 
 const colorChange = (id, start, changeColor) => {
@@ -242,7 +254,7 @@ function App() {
 
     useEffect(() => {
         async function getPixels(){
-            if (JSON.parse(localStorage.getItem('palette')) === null) setColors(getPalette(await pixels(inputskin)))
+            if (JSON.parse(localStorage.getItem('palette')) === null) setColors(getPalette(await getImageData(inputskin)))
         }
         const canvasSkin = document.getElementById("skin-container")
         canvasSkin.animate(
@@ -353,14 +365,11 @@ function App() {
                                     <input type='file' ref={ inputFile } onChange={ (e) => {
                                         const reader = new FileReader()
                                         reader.addEventListener('load', async () => {
-                                            let palette = getPalette(await pixels(reader.result))
-                                            // console.log(palette)
+                                            let palette = getPalette(await getImageData(reader.result))
                                             localStorage.setItem('skin', reader.result)
                                             localStorage.setItem('palette', JSON.stringify(palette))
                                             setColors(palette)
                                             setInputSkin(reader.result)
-                                            // console.log(colors)
-                                            // console.log(reader.result)
                                         })
                                         reader.readAsDataURL(e.target.files[0])
                                     }} style={{ display: 'none' }}/>
