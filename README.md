@@ -6,3 +6,4 @@ I built that using some modern technologies such as: **React**, **Tailwind** and
 ### How does that works?
 
 I panicked days because I could not find a good library for parsing pixels in the image and replacing them, but here's how I figured out:
+![](https://i.imgur.com/GyUCLl0.png)
