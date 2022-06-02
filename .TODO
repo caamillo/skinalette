@@ -1,3 +1,6 @@
+TODO:
+    talk about the design, bitmaps and the fact that this is not a tool for replacing colors
+
 CSS:
     Grid Gradient [ Up and Down ] White (when you have to scroll)
 
@@ -8,7 +11,6 @@ Colors:
     Double OutLine (White and Blurple)
     Only show colors in the viewport OR fade in perc the colors not in the viewport (change alpha to opacity)
 
-About:
     [ TRANSITION ]
     write about
         whats skinalette?
@@ -20,6 +22,8 @@ Style:
     when mousehover animation "alette" where a colorpicker takes randomly color from a very tiny [ absolute ] color picker
 
 Useful:
+    Refactor the fucking code
+    Crypt local storage
     Remove react strict mode
     Undo (ctrl z) on changing palette color [ IDK ]
     Warning when the image has more then { NUM } colors - [ !Warning! We suggest not to use skins with large palettes. ]
