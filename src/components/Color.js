@@ -18,7 +18,7 @@ const Color = ({ colorstart, id, colorChange }) => {
                 width: '100%',
                 height: '100%',
                 backgroundColor: color,
-                borderRadius: '0.375rem',
+                borderRadius: '0.25rem',
                 border: '2px solid #FEF9FF'
             }}
             onClick = { () => colorChange(id, color, setColor) }

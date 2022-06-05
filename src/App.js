@@ -27,6 +27,7 @@ let pointerX, pointerY
 const skinSize = 64
 const mdSize = 800
 
+
 function componentToHex(c){
     var hex = c.toString(16);
     return hex.length === 1 ? "0" + hex : hex;
@@ -96,6 +97,15 @@ const getPixel = (pixel, palette) => {
     return { color: '#000000', rgb: [0, 0, 0, 0] }
 }
 
+const parseRgb = (rgb) => {
+    const match = /(rgb)?\(? ?(\d{1,3})[ ,-\/|\\][ ,-\/|\\]?(\d{1,3})[ ,-\/|\\][ ,-\/|\\]?(\d{1,3}) ?\)?/
+    const res = match.exec(rgb)
+    if (res === null) return null
+    const resRgb = [res[2], res[3], res[4]].map((x) => parseInt(x))
+    if (resRgb.some((x) => x > 255 || x < 0)) return null
+    return rgbToHex(resRgb)
+}
+
 const inputChangeColor = (e) => {
     let color = null
     if (e.target.id == 'hex') {
@@ -104,13 +114,7 @@ const inputChangeColor = (e) => {
         const reg = /^#[0-9A-F]{6}$/
         if (!reg.test(color)) return null
     } else {
-        const match = /(rgb)?\(? ?(\d{1,3})[ ,-\/|\\][ ,-\/|\\]?(\d{1,3})[ ,-\/|\\][ ,-\/|\\]?(\d{1,3}) ?\)?/
-        const res = match.exec(e.target.value)
-        if (res === null) return null
-        const resRgb = [res[2], res[3], res[4]].map((x) => parseInt(x))
-        if (resRgb.some((x) => x > 255 || x < 0)) return null
-        e.target.value = resRgb.join(', ')
-        color = rgbToHex(resRgb)
+        color = parseRgb(e.target.value)
     }
     if (color === null) return null
     changeView(color)
@@ -119,9 +123,8 @@ const inputChangeColor = (e) => {
     )
 }
 
-const toggleNightMode = () => {
+const toggleNightMode = async () => {
     setIsNightOutside(!isNightOutside)
-    console.log(isNightOutside)
 }
 
 const getImageData = (src) => {
@@ -233,6 +236,7 @@ function App() {
     const [choseColor, setChoseColor] = useState(null)
     const [heightSkin, setHeightSkin] = useState(Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0) < mdSize ? 250 : 300)
     const [isNight, setIsNight] = useState(false)
+    const [bgCanvas, setBgCanvas] = useState('#FEF9FF')
     const inputFile = useRef(null)
 
     useEffect(() => {
@@ -252,6 +256,39 @@ function App() {
         return () => clearInterval(t)
     })
 
+    useEffect(() => { // nightbutton disabled
+        isNightOutside = isNight
+        setIsNightOutside = setIsNight
+        const body = document.getElementsByTagName('body')[0]
+        const first = isNight ? '#FEF9FF' :  '#222222'
+        const second = isNight ? '#222222' : '#FEF9FF'
+        const actualColor = body.style.backgroundColor.includes('rgb') ? body.style.backgroundColor : body.style.backgroundColor
+        const timeout = 1E3
+        if (parseRgb(actualColor).toUpperCase() === second.toUpperCase()) return
+        const canvasSkin = document.getElementById("skin-container")
+        canvasSkin.style.opacity = 0
+        console.log('inizio')
+        body.animate(
+            [
+                { backgroundColor: first },
+                { backgroundColor: second }
+            ],
+            { duration: timeout }
+        )
+        setTimeout(() => {
+            setBgCanvas(second)
+            canvasSkin.animate(
+                [
+                    { opacity: 0 },
+                    { opacity: 1 }
+                ],
+                { duration: timeout }
+            )
+            setTimeout(() => canvasSkin.style.opacity = 1, timeout)
+        }, timeout)
+        body.style.backgroundColor = second
+    }, [isNight])
+
     useEffect(() => {
         async function getPixels(){
             if (JSON.parse(localStorage.getItem('palette')) === null) setColors(getPalette(await getImageData(inputskin)))
@@ -269,7 +306,7 @@ function App() {
             width: 300,
             height: heightSkin,
             skin: inputskin,
-            background: '#FEF9FF'
+            background: bgCanvas
         })
         let control = null
         if (orbit != null) {
@@ -292,9 +329,7 @@ function App() {
         setPalette = setColors
         colorToChoose = choseColor
         changeColorToChoose = setChoseColor
-        isNightOutside = isNight
-        setIsNightOutside = setIsNight
-    }, [inputskin, heightSkin])
+    }, [inputskin, heightSkin, bgCanvas])
 
     document.documentElement.addEventListener('click', (e) => {
         const parent = document.getElementById('colorpicker')
@@ -325,7 +360,7 @@ function App() {
 
     return (
         <div id="container">
-            <div id="colorpicker" className="absolute" style={{display: 'none'}}>
+            <div id="colorpicker" className="absolute" style={{ display: 'none' }}>
                 <div id="board" className='md:flex block bg-[#fff] md:p-5 p-4 rounded-md shadow-xl shadow-blurple/50 space-y-3 md:space-x-5 md:space-y-0'>
                     <div className='flex justify-center items-center child:w-[180px] child:h-[150px] md:child:w-[200px] md:child:h-[200px]'>
                         { colorpicker }
@@ -351,7 +386,7 @@ function App() {
                     </div>
                 </div>
             </nav>
-            <div className="theme hidden absolute right-0 bottom-0">
+            <div className="theme absolute right-0 bottom-0">
                 <button onClick={() => toggleNightMode()} type='button' className='w-[50px] h-[50px] bg-blurple rounded-md m-5'>N</button>
             </div>
             <section id="home" className='flex items-center justify-center w-screen h-screen'>
