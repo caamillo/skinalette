@@ -5,21 +5,11 @@ const Color = ({ colorstart, id, colorChange }) => {
     const [color, setColor] = useState(colorstart)
 
     return(
-        <div className="color-container" style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            width: '50px',
-            height: '50px'
-        }}>
+        <div className="color-container flex items-center justify-center border-2 border-[rgb(0,0,0,0)] w-[50px] h-[50px]">
             <div
-            className="color"
+            className="color w-full h-full rounded-md border-2 border-snow dark:border-bgDark outline outline-blurple outline-2"
             style = {{
-                width: '100%',
-                height: '100%',
-                backgroundColor: color,
-                borderRadius: '0.25rem',
-                border: '2px solid #FEF9FF'
+                backgroundColor: color
             }}
             onClick = { () => colorChange(id, color, setColor) }
             />

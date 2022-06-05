@@ -1,3 +1,14 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+    :root {
+        --blurple: #736CED;
+        --lightblurple: #9F9FED;
+        --magnolia: #F6EEFB;
+        --snow: #FEF9FF;
+        --champagnepink: #F2DFD7;
+        --bgDark: #141313;
+      }
+}

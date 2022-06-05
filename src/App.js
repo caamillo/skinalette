@@ -27,6 +27,7 @@ let pointerX, pointerY
 const skinSize = 64
 const mdSize = 800
 
+const computedDocument = getComputedStyle(document.documentElement)
 
 function componentToHex(c){
     var hex = c.toString(16);
@@ -235,8 +236,8 @@ function App() {
     const [orbit, setOrbit] = useState(null)
     const [choseColor, setChoseColor] = useState(null)
     const [heightSkin, setHeightSkin] = useState(Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0) < mdSize ? 250 : 300)
-    const [isNight, setIsNight] = useState(false)
-    const [bgCanvas, setBgCanvas] = useState('#FEF9FF')
+    const [isNight, setIsNight] = useState(localStorage.getItem('darkmode') === 'true')
+    const [bgCanvas, setBgCanvas] = useState(isNight ? computedDocument.getPropertyValue('--bgDark') : computedDocument.getPropertyValue('--snow'))
     const inputFile = useRef(null)
 
     useEffect(() => {
@@ -259,34 +260,9 @@ function App() {
     useEffect(() => { // nightbutton disabled
         isNightOutside = isNight
         setIsNightOutside = setIsNight
-        const body = document.getElementsByTagName('body')[0]
-        const first = isNight ? '#FEF9FF' :  '#222222'
-        const second = isNight ? '#222222' : '#FEF9FF'
-        const actualColor = body.style.backgroundColor.includes('rgb') ? body.style.backgroundColor : body.style.backgroundColor
-        const timeout = 1E3
-        if (parseRgb(actualColor).toUpperCase() === second.toUpperCase()) return
-        const canvasSkin = document.getElementById("skin-container")
-        canvasSkin.style.opacity = 0
-        console.log('inizio')
-        body.animate(
-            [
-                { backgroundColor: first },
-                { backgroundColor: second }
-            ],
-            { duration: timeout }
-        )
-        setTimeout(() => {
-            setBgCanvas(second)
-            canvasSkin.animate(
-                [
-                    { opacity: 0 },
-                    { opacity: 1 }
-                ],
-                { duration: timeout }
-            )
-            setTimeout(() => canvasSkin.style.opacity = 1, timeout)
-        }, timeout)
-        body.style.backgroundColor = second
+        if (isNight) { document.documentElement.classList.add('dark'); setBgCanvas(computedDocument.getPropertyValue('--bgDark')) }
+        else { document.documentElement.classList.remove('dark'); setBgCanvas('' + computedDocument.getPropertyValue('--snow')) }
+        localStorage.setItem('darkmode', isNight)
     }, [isNight])
 
     useEffect(() => {
@@ -306,7 +282,7 @@ function App() {
             width: 300,
             height: heightSkin,
             skin: inputskin,
-            background: bgCanvas
+            background: bgCanvas.trim()
         })
         let control = null
         if (orbit != null) {
@@ -357,22 +333,22 @@ function App() {
         colorPicker.style.top = (rect.top + offsetY) + 'px' 
         colorPicker.style.left = (rect.left + elementColor.offsetWidth + offsetX) + 'px'
     })
-
+    
     return (
         <div id="container">
-            <div id="colorpicker" className="absolute" style={{ display: 'none' }}>
-                <div id="board" className='md:flex block bg-[#fff] md:p-5 p-4 rounded-md shadow-xl shadow-blurple/50 space-y-3 md:space-x-5 md:space-y-0'>
+            <div id="colorpicker" className="absolute z-10" style={{ display: 'none' }}>
+                <div id="board" className='md:flex block bg-[#fff] dark:bg-[#1c1c1c] md:p-5 p-4 rounded-md shadow-xl shadow-blurple/50 space-y-3 md:space-x-5 md:space-y-0'>
                     <div className='flex justify-center items-center child:w-[180px] child:h-[150px] md:child:w-[200px] md:child:h-[200px]'>
                         { colorpicker }
                     </div>
                     <div id="color-content" className='space-y-3'>
                         <div id="hexform">
                             <label htmlFor="hex" className='block text-blurple font-radiocanada font-medium text-sm md:text-lg'>Hex</label>
-                            <input type="text" id="hex" onChange={ inputChangeColor } placeholder='#' name="hex" className='bloc border-2 border-blurple rounded-md focus:outline-none text-lightblurple text-sm md:text-lg p-1 pl-3'/>
+                            <input type="text" id="hex" onChange={ inputChangeColor } placeholder='#' name="hex" className='block bg-snow dark:bg-bgDark border-2 border-blurple rounded-md focus:outline-none text-lightblurple text-sm md:text-lg p-1 pl-3'/>
                         </div>
                         <div id="rgbform" className='hidden md:block'>
                             <label htmlFor="rgb" className='block text-blurple font-radiocanada font-medium text-sm md:text-lg'>Rgb</label>
-                            <input type="text" id="rgb" onChange={ inputChangeColor } placeholder='0, 0, 0' name="rgb" className='block border-2 border-blurple rounded-md focus:outline-none text-lightblurple text-sm md:text-lg p-1 pl-3'/>
+                            <input type="text" id="rgb" onChange={ inputChangeColor } placeholder='0, 0, 0' name="rgb" className='block bg-snow dark:bg-bgDark border-2 border-blurple rounded-md focus:outline-none text-lightblurple text-sm md:text-lg p-1 pl-3'/>
                         </div>
                     </div>
                 </div>
@@ -387,7 +363,7 @@ function App() {
                 </div>
             </nav>
             <div className="theme absolute right-0 bottom-0">
-                <button onClick={() => toggleNightMode()} type='button' className='w-[50px] h-[50px] bg-blurple rounded-md m-5'>N</button>
+                <button onClick={() => toggleNightMode()} type='button' className='w-[50px] h-[50px] bg-blurple rounded-md m-5 text-[#fff]'></button>
             </div>
             <section id="home" className='flex items-center justify-center w-screen h-screen'>
                     <div id="skincard" className='border-2 rounded border-blurple'>
@@ -412,11 +388,11 @@ function App() {
 
                                     </div>
                                     <button type='button' onClick={ () => inputFile.current.click() } className='border-2 border-blurple p-1 px-5 text-blurple rounded-md font-radiocanada font-semibold'>Change</button>
-                                    <a download={Math.floor(Math.random() * 999999999) + '.png'} href={ inputskin } className='border-2 border-blurple p-1 px-3 text-snow bg-blurple rounded-md font-radiocanada font-semibold'>Download</a>
+                                    <a download={Math.floor(Math.random() * 999999999) + '.png'} href={ inputskin } className='border-2 border-blurple p-1 px-3 text-snow dark:text-bgDark bg-blurple rounded-md font-radiocanada font-semibold'>Download</a>
                                 </div>
                             </div>
                             <div className='colors flex justify-center items-start md:block overflow-x-hidden overflow-auto m-5 h-[170px] md:h-auto md:max-h-[250px]' onMouseMove={getPointerPos}>
-                                <div id="colors" className="grid grid-cols-3 m-auto gap-2 md:pr-3 child:border-2 child:border-blurple child:rounded-md child:mx-auto">
+                                <div id="colors" className="grid grid-cols-3 m-auto gap-2 md:pr-3 child:mx-auto">
                                     { colors.map(({ color, id }, i) => i > -1 ? <Color colorstart = { color } key = { Math.floor(Math.random() * 999999999) } id = { i } colorChange = { colorChange } /> : null) }
                                 </div>
                             </div>
