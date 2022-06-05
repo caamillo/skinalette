@@ -10,7 +10,6 @@ import './css/animation.css'
 import testskin from './img/input.png'
 
 // NPM
-import pixels from 'image-pixels'
 import { IdleAnimation, createOrbitControls, FXAASkinViewer } from 'skinview3d';
 import { HexColorPicker } from "react-colorful"
 
@@ -27,6 +26,8 @@ let pointerX, pointerY
 
 const skinSize = 64
 const mdSize = 800
+
+const computedDocument = getComputedStyle(document.documentElement)
 
 function componentToHex(c){
     var hex = c.toString(16);
@@ -56,13 +57,15 @@ function getPointerPos(e){
 function getPalette(image){
     const allcolors = []
     var pixelCount = -1
-    for(let i = 0; i < image.height; i++){
+    const height = image.img.height
+    const width = image.img.width
+    for(let i = 0; i < height; i++){
         imgLoop:
-        for(let j = 0; j < image.width; j++){
+        for(let j = 0; j < width; j++){
             const color = []
 
             for(let k = 0; k < 4; k++) {
-                color.push(image.data[(i * image.width + j) * 4 + k])
+                color.push(image.data[(i * width + j) * 4 + k])
             }
 
             pixelCount++
@@ -95,6 +98,15 @@ const getPixel = (pixel, palette) => {
     return { color: '#000000', rgb: [0, 0, 0, 0] }
 }
 
+const parseRgb = (rgb) => {
+    const match = /(rgb)?\(? ?(\d{1,3})[ ,-\/|\\][ ,-\/|\\]?(\d{1,3})[ ,-\/|\\][ ,-\/|\\]?(\d{1,3}) ?\)?/
+    const res = match.exec(rgb)
+    if (res === null) return null
+    const resRgb = [res[2], res[3], res[4]].map((x) => parseInt(x))
+    if (resRgb.some((x) => x > 255 || x < 0)) return null
+    return rgbToHex(resRgb)
+}
+
 const inputChangeColor = (e) => {
     let color = null
     if (e.target.id == 'hex') {
@@ -103,13 +115,7 @@ const inputChangeColor = (e) => {
         const reg = /^#[0-9A-F]{6}$/
         if (!reg.test(color)) return null
     } else {
-        const match = /(rgb)?\(? ?(\d{1,3})[ ,-\/|\\][ ,-\/|\\]?(\d{1,3})[ ,-\/|\\][ ,-\/|\\]?(\d{1,3}) ?\)?/
-        const res = match.exec(e.target.value)
-        if (res === null) return null
-        const resRgb = [res[2], res[3], res[4]].map((x) => parseInt(x))
-        if (resRgb.some((x) => x > 255 || x < 0)) return null
-        e.target.value = resRgb.join(', ')
-        color = rgbToHex(resRgb)
+        color = parseRgb(e.target.value)
     }
     if (color === null) return null
     changeView(color)
@@ -118,55 +124,65 @@ const inputChangeColor = (e) => {
     )
 }
 
-const toggleNightMode = () => {
+const toggleNightMode = async () => {
     setIsNightOutside(!isNightOutside)
-    console.log(isNightOutside)
 }
 
-const changeView = (changingColor) => {
-    changing = true
-    changeColorToChoose(changingColor)
-    var cvs = document.createElement('canvas')
-    var img = new Image()
-    img.src = skin
-    img.onload = () => {
-        cvs.width = img.width
-        cvs.height = img.height
-        var ctx = cvs.getContext('2d')
-        ctx.drawImage(img, 0, 0)
-        var imageData = ctx.getImageData(0, 0, img.width, img.height)
-        var data = imageData.data
-        try{
-            if (colorsused.length == 0) colorsused = (JSON.parse(localStorage.getItem('palette')) === null) ? getPalette({
-                width: img.width,
-                height: img.height,
-                data: data
-            }) : JSON.parse(localStorage.getItem('palette'))
-        }catch(Error){
-            colorsused = getPalette({
-                width: img.width,
-                height: img.height,
-                data: data
+const getImageData = (src) => {
+    const cvs = document.createElement('canvas')
+    const img = new Image()
+    img.src = src
+    return new Promise((resolve, reject) => {
+        img.onload = () => {
+            cvs.width = img.width
+            cvs.height = img.height
+            const ctx = cvs.getContext('2d')
+            ctx.drawImage(img, 0, 0)
+            const imageData = ctx.getImageData(0, 0, img.width, img.height)
+            resolve({
+                'data': imageData.data,
+                'img': img,
+                'cvs': cvs
             })
         }
-        // console.log(colorsused)
-        colorsused[targetColorId].color = changingColor
-        colorsused[targetColorId].rgb = hexToRgb(changingColor)
-        const bitmap = getBitMap(colorsused)
-        const datanew = ctx.createImageData(img.width, img.height)
-        if (datanew.data.set) datanew.data.set(bitmap)
-        else bitmap.forEach((val,i) => datanew.data[i] = val)
-        ctx.putImageData(datanew, 0, 0)
-        // console.log(cvs.toDataURL())
-        // console.log(colorsused)
-        changeSkin(cvs.toDataURL())
-        // console.log(colorsused)
-        targetChangeColor(changingColor)
-        setPalette(colorsused)
-        localStorage.setItem('skin', cvs.toDataURL())
-        localStorage.setItem('palette', JSON.stringify(colorsused))
-        changing = false
+    })
+}
+
+const changeView = async (changingColor) => {
+    changing = true
+    changeColorToChoose(changingColor)
+    const {data, img, cvs} = await getImageData(skin)
+    const ctx = cvs.getContext('2d')
+    try{
+        if (colorsused.length == 0) colorsused = (JSON.parse(localStorage.getItem('palette')) === null) ? getPalette({
+            width: img.width,
+            height: img.height,
+            data: data
+        }) : JSON.parse(localStorage.getItem('palette'))
+    }catch(Error){
+        colorsused = getPalette({
+            width: img.width,
+            height: img.height,
+            data: data
+        })
     }
+    // console.log(colorsused)
+    colorsused[targetColorId].color = changingColor
+    colorsused[targetColorId].rgb = hexToRgb(changingColor)
+    const bitmap = getBitMap(colorsused)
+    const datanew = ctx.createImageData(img.width, img.height)
+    if (datanew.data.set) datanew.data.set(bitmap)
+    else bitmap.forEach((val,i) => datanew.data[i] = val)
+    ctx.putImageData(datanew, 0, 0)
+    // console.log(cvs.toDataURL())
+    // console.log(colorsused)
+    changeSkin(cvs.toDataURL())
+    // console.log(colorsused)
+    targetChangeColor(changingColor)
+    setPalette(colorsused)
+    localStorage.setItem('skin', cvs.toDataURL())
+    localStorage.setItem('palette', JSON.stringify(colorsused))
+    changing = false
 }
 
 const colorChange = (id, start, changeColor) => {
@@ -220,7 +236,8 @@ function App() {
     const [orbit, setOrbit] = useState(null)
     const [choseColor, setChoseColor] = useState(null)
     const [heightSkin, setHeightSkin] = useState(Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0) < mdSize ? 250 : 300)
-    const [isNight, setIsNight] = useState(false)
+    const [isNight, setIsNight] = useState(localStorage.getItem('darkmode') === 'true')
+    const [bgCanvas, setBgCanvas] = useState(isNight ? computedDocument.getPropertyValue('--bgDark') : computedDocument.getPropertyValue('--snow'))
     const inputFile = useRef(null)
 
     useEffect(() => {
@@ -240,9 +257,17 @@ function App() {
         return () => clearInterval(t)
     })
 
+    useEffect(() => { // nightbutton disabled
+        isNightOutside = isNight
+        setIsNightOutside = setIsNight
+        if (isNight) { document.documentElement.classList.add('dark'); setBgCanvas(computedDocument.getPropertyValue('--bgDark')) }
+        else { document.documentElement.classList.remove('dark'); setBgCanvas('' + computedDocument.getPropertyValue('--snow')) }
+        localStorage.setItem('darkmode', isNight)
+    }, [isNight])
+
     useEffect(() => {
         async function getPixels(){
-            if (JSON.parse(localStorage.getItem('palette')) === null) setColors(getPalette(await pixels(inputskin)))
+            if (JSON.parse(localStorage.getItem('palette')) === null) setColors(getPalette(await getImageData(inputskin)))
         }
         const canvasSkin = document.getElementById("skin-container")
         canvasSkin.animate(
@@ -257,7 +282,7 @@ function App() {
             width: 300,
             height: heightSkin,
             skin: inputskin,
-            background: '#FEF9FF'
+            background: bgCanvas.trim()
         })
         let control = null
         if (orbit != null) {
@@ -280,9 +305,7 @@ function App() {
         setPalette = setColors
         colorToChoose = choseColor
         changeColorToChoose = setChoseColor
-        isNightOutside = isNight
-        setIsNightOutside = setIsNight
-    }, [inputskin, heightSkin])
+    }, [inputskin, heightSkin, bgCanvas])
 
     document.documentElement.addEventListener('click', (e) => {
         const parent = document.getElementById('colorpicker')
@@ -310,22 +333,22 @@ function App() {
         colorPicker.style.top = (rect.top + offsetY) + 'px' 
         colorPicker.style.left = (rect.left + elementColor.offsetWidth + offsetX) + 'px'
     })
-
+    
     return (
         <div id="container">
-            <div id="colorpicker" className="absolute" style={{display: 'none'}}>
-                <div id="board" className='md:flex block bg-[#fff] md:p-5 p-4 rounded-md shadow-xl shadow-blurple/50 space-y-3 md:space-x-5 md:space-y-0'>
+            <div id="colorpicker" className="absolute z-10" style={{ display: 'none' }}>
+                <div id="board" className='md:flex block bg-[#fff] dark:bg-[#1c1c1c] md:p-5 p-4 rounded-md shadow-xl shadow-blurple/50 space-y-3 md:space-x-5 md:space-y-0'>
                     <div className='flex justify-center items-center child:w-[180px] child:h-[150px] md:child:w-[200px] md:child:h-[200px]'>
                         { colorpicker }
                     </div>
                     <div id="color-content" className='space-y-3'>
                         <div id="hexform">
                             <label htmlFor="hex" className='block text-blurple font-radiocanada font-medium text-sm md:text-lg'>Hex</label>
-                            <input type="text" id="hex" onChange={ inputChangeColor } placeholder='#' name="hex" className='bloc border-2 border-blurple rounded-md focus:outline-none text-lightblurple text-sm md:text-lg p-1 pl-3'/>
+                            <input type="text" id="hex" onChange={ inputChangeColor } placeholder='#' name="hex" className='block bg-snow dark:bg-bgDark border-2 border-blurple rounded-md focus:outline-none text-lightblurple text-sm md:text-lg p-1 pl-3'/>
                         </div>
                         <div id="rgbform" className='hidden md:block'>
                             <label htmlFor="rgb" className='block text-blurple font-radiocanada font-medium text-sm md:text-lg'>Rgb</label>
-                            <input type="text" id="rgb" onChange={ inputChangeColor } placeholder='0, 0, 0' name="rgb" className='block border-2 border-blurple rounded-md focus:outline-none text-lightblurple text-sm md:text-lg p-1 pl-3'/>
+                            <input type="text" id="rgb" onChange={ inputChangeColor } placeholder='0, 0, 0' name="rgb" className='block bg-snow dark:bg-bgDark border-2 border-blurple rounded-md focus:outline-none text-lightblurple text-sm md:text-lg p-1 pl-3'/>
                         </div>
                     </div>
                 </div>
@@ -339,8 +362,8 @@ function App() {
                     </div>
                 </div>
             </nav>
-            <div className="theme hidden absolute right-0 bottom-0">
-                <button onClick={() => toggleNightMode()} type='button' className='w-[50px] h-[50px] bg-blurple rounded-md m-5'>N</button>
+            <div className="theme absolute right-0 bottom-0">
+                <button onClick={() => toggleNightMode()} type='button' className='w-[50px] h-[50px] bg-blurple rounded-md m-5 text-[#fff]'></button>
             </div>
             <section id="home" className='flex items-center justify-center w-screen h-screen'>
                     <div id="skincard" className='border-2 rounded border-blurple'>
@@ -353,14 +376,11 @@ function App() {
                                     <input type='file' ref={ inputFile } onChange={ (e) => {
                                         const reader = new FileReader()
                                         reader.addEventListener('load', async () => {
-                                            let palette = getPalette(await pixels(reader.result))
-                                            // console.log(palette)
+                                            let palette = getPalette(await getImageData(reader.result))
                                             localStorage.setItem('skin', reader.result)
                                             localStorage.setItem('palette', JSON.stringify(palette))
                                             setColors(palette)
                                             setInputSkin(reader.result)
-                                            // console.log(colors)
-                                            // console.log(reader.result)
                                         })
                                         reader.readAsDataURL(e.target.files[0])
                                     }} style={{ display: 'none' }}/>
@@ -368,11 +388,11 @@ function App() {
 
                                     </div>
                                     <button type='button' onClick={ () => inputFile.current.click() } className='border-2 border-blurple p-1 px-5 text-blurple rounded-md font-radiocanada font-semibold'>Change</button>
-                                    <a download={Math.floor(Math.random() * 999999999) + '.png'} href={ inputskin } className='border-2 border-blurple p-1 px-3 text-snow bg-blurple rounded-md font-radiocanada font-semibold'>Download</a>
+                                    <a download={Math.floor(Math.random() * 999999999) + '.png'} href={ inputskin } className='border-2 border-blurple p-1 px-3 text-snow dark:text-bgDark bg-blurple rounded-md font-radiocanada font-semibold'>Download</a>
                                 </div>
                             </div>
                             <div className='colors flex justify-center items-start md:block overflow-x-hidden overflow-auto m-5 h-[170px] md:h-auto md:max-h-[250px]' onMouseMove={getPointerPos}>
-                                <div id="colors" className="grid grid-cols-3 m-auto gap-2 md:pr-3 child:border-2 child:border-blurple child:rounded-md child:mx-auto">
+                                <div id="colors" className="grid grid-cols-3 m-auto gap-2 md:pr-3 child:mx-auto">
                                     { colors.map(({ color, id }, i) => i > -1 ? <Color colorstart = { color } key = { Math.floor(Math.random() * 999999999) } id = { i } colorChange = { colorChange } /> : null) }
                                 </div>
                             </div>
