@@ -235,6 +235,7 @@ const colorChange = (id, start, changeColor) => {
     colorPicker.style.display = 'block'
 }
 
+const isMinecraftSkin = async (src) => { return ((await getImageData(src)).data.length === (Math.pow(skinSize, 2)) * 4) }
 
 function App() { 
     const palette = JSON.parse(localStorage.getItem('palette'))
@@ -279,43 +280,45 @@ function App() {
         async function getPixels(){
             if (JSON.parse(localStorage.getItem('palette')) === null) setColors(getPalette(await getImageData(inputskin)))
         }
-        if (inputskin === null) return
-        const canvasSkin = document.getElementById("skin-container")
-        const skinViewer = new FXAASkinViewer({
-            canvas: canvasSkin,
-            width: 300,
-            height: heightSkin,
-            skin: inputskin,
-            background: bgCanvas.trim()
-        })
-        canvasSkin.animate(
-            [
-                { opacity: 0 },
-                { opacity: 1 }
-            ],
-            { duration: 1E3 }
-        )
-        let control = null
-        if (orbit != null) {
-            control = orbit
-            control.object = skinViewer.camera
-            control.reset()
-        } else {
-            control = createOrbitControls(skinViewer)
-            control.rotateSpeed = 0.7
-            control.enableZoom = false;
-            control.enablePan = false;
-            setOrbit(control)
-        }
-        skinViewer.animations.add(IdleAnimation)
-        getPixels()
-        changePalette = setColorPicker
-        skin = inputskin
-        changeSkin = setInputSkin
-        colorsused = colors
-        setPalette = setColors
-        colorToChoose = choseColor
-        changeColorToChoose = setChoseColor
+        ;(async () => {
+            if (inputskin === null || !(await isMinecraftSkin(inputskin))) return setInputSkin(null)
+            const canvasSkin = document.getElementById("skin-container")
+            const skinViewer = new FXAASkinViewer({
+                canvas: canvasSkin,
+                width: 300,
+                height: heightSkin,
+                skin: inputskin,
+                background: bgCanvas.trim()
+            })
+            canvasSkin.animate(
+                [
+                    { opacity: 0 },
+                    { opacity: 1 }
+                ],
+                { duration: 1E3 }
+            )
+            let control = null
+            if (orbit != null) {
+                control = orbit
+                control.object = skinViewer.camera
+                control.reset()
+            } else {
+                control = createOrbitControls(skinViewer)
+                control.rotateSpeed = 0.7
+                control.enableZoom = false;
+                control.enablePan = false;
+                setOrbit(control)
+            }
+            skinViewer.animations.add(IdleAnimation)
+            getPixels()
+            changePalette = setColorPicker
+            skin = inputskin
+            changeSkin = setInputSkin
+            colorsused = colors
+            setPalette = setColors
+            colorToChoose = choseColor
+            changeColorToChoose = setChoseColor
+        })()
     }, [inputskin, heightSkin, bgCanvas])
 
     document.documentElement.addEventListener('click', (e) => {
@@ -376,9 +379,14 @@ function App() {
             <div className="theme absolute md:right-0 bottom-0 mb-4 md:mb-[0px] left-1/2 md:left-auto ml-[-25px] md:ml-[0px]">
                 <button onClick={() => toggleNightMode()} type='button' className='flex items-center justify-center w-[50px] h-[50px] bg-blurple rounded-md md:m-5 border-2 border-snow dark:border-bgDark outline outline-2 outline-blurple'><IconTheme fill='var(--snow)' className='w-6'/></button>
             </div>
+            <div className="alert absolute text-snow left-0 bottom-0 m-5 hidden">
+                <div className="title">Error Title</div>
+                <div className="content">Error Desk</div>
+            </div>
             <input type='file' className='hidden' ref={ inputFile } onChange={ (e) => {
                 const reader = new FileReader()
                 reader.addEventListener('load', async () => {
+                    if (!(await isMinecraftSkin(reader.result))) return
                     const palette = getPalette(await getImageData(reader.result))
                     localStorage.setItem('skin', reader.result)
                     localStorage.setItem('palette', JSON.stringify(palette))
@@ -388,7 +396,7 @@ function App() {
                 reader.readAsDataURL(e.target.files[0])
             }}/>
             <section id="home" className='flex items-center justify-center w-screen h-screen'>
-                    { inputskin && 
+                    { inputskin &&
                         <div id="skincard" className='border-2 rounded border-blurple'>
                             <div className="content md:flex md:items-center block">
                                 <div className="avatar">
