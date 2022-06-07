@@ -15,6 +15,7 @@ import { HexColorPicker } from "react-colorful"
 
 // Components
 import Color from './components/Color'
+import Error from './components/Error'
 
 // Tailwind
 import './tailwind/compiled.css'
@@ -126,10 +127,6 @@ const inputChangeColor = (e) => {
     changePalette(
         <HexColorPicker color = { color } onChange={ (changingColor) => changeView(changingColor) }/>
     )
-}
-
-const toggleNightMode = async () => {
-    setIsNightOutside(!isNightOutside)
 }
 
 const getImageData = (src) => {
@@ -377,11 +374,12 @@ function App() {
                 </div>
             </nav>
             <div className="theme absolute md:right-0 bottom-0 mb-4 md:mb-[0px] left-1/2 md:left-auto ml-[-25px] md:ml-[0px]">
-                <button onClick={() => toggleNightMode()} type='button' className='flex items-center justify-center w-[50px] h-[50px] bg-blurple rounded-md md:m-5 border-2 border-snow dark:border-bgDark outline outline-2 outline-blurple'><IconTheme fill='var(--snow)' className='w-6'/></button>
+                <button onClick={() => setIsNightOutside(!isNightOutside)} type='button' className='flex items-center justify-center w-[50px] h-[50px] bg-blurple rounded-md md:m-5 border-2 border-snow dark:border-bgDark outline outline-2 outline-blurple'><IconTheme fill='var(--snow)' className='w-6'/></button>
             </div>
-            <div className="alert absolute text-snow left-0 bottom-0 m-5 hidden">
-                <div className="title">Error Title</div>
-                <div className="content">Error Desk</div>
+            <div className="error-container space-y-3 absolute left-0 bottom-0 mx-5 mb-8 align-bottom">
+                <Error id='2' />
+                <Error id='1' />
+                <Error id='0' />
             </div>
             <input type='file' className='hidden' ref={ inputFile } onChange={ (e) => {
                 const reader = new FileReader()

@@ -15,6 +15,8 @@ module.exports = {
       'snow': 'var(--snow)',
       'champagnepink': 'var(--champagnepink)',
       'bgDark': 'var(--bgDark)',
+      'darkErrorDark': 'var(--darkErrorDark)',
+      'darkErrorLight': 'var(--darkErrorLight)'
     },
     fontFamily: {
       'radiocanada': ['Radio Canada', 'sans-serif']

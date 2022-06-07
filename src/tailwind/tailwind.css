@@ -10,5 +10,8 @@
         --snow: #FEF9FF;
         --champagnepink: #F2DFD7;
         --bgDark: #141313;
+        --darkErrorDark: #5D1F1F;
+        --darkErrorLight: #743434;
+        --maxerroropacity: 0.9;
       }
 }
