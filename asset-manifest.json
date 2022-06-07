@@ -1,15 +1,15 @@
 {
   "files": {
-    "main.css": "/skinalette/static/css/main.e75da262.css",
-    "main.js": "/skinalette/static/js/main.d76ccff8.js",
+    "main.css": "/skinalette/static/css/main.069679ea.css",
+    "main.js": "/skinalette/static/js/main.7b4e6211.js",
     "static/media/sun.svg": "/skinalette/static/media/sun.f78edf08d8039613828cf5f75100a8c6.svg",
     "index.html": "/skinalette/index.html",
     "static/media/moon.svg": "/skinalette/static/media/moon.f9ce52c08e6a963a0ccfd9728861e041.svg",
-    "main.e75da262.css.map": "/skinalette/static/css/main.e75da262.css.map",
-    "main.d76ccff8.js.map": "/skinalette/static/js/main.d76ccff8.js.map"
+    "main.069679ea.css.map": "/skinalette/static/css/main.069679ea.css.map",
+    "main.7b4e6211.js.map": "/skinalette/static/js/main.7b4e6211.js.map"
   },
   "entrypoints": [
-    "static/css/main.e75da262.css",
-    "static/js/main.d76ccff8.js"
+    "static/css/main.069679ea.css",
+    "static/js/main.7b4e6211.js"
   ]
 }
