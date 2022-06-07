@@ -421,9 +421,9 @@ function App() {
                     }
                     { !inputskin && 
                         <div className='text-center'>
-                            <div className="text-bgDark dark:text-snow">Please select a valid minecraft skin</div>
-                            <div className="text-bgDark dark:text-snow">Or just use an <button onClick={ () => setInputSkin(testskin) } className='text-blurple'>example</button></div>
-                            <button onClick={ () => inputFile.current.click() } className='bg-blurple p-2 px-3 mt-3 rounded-md text-snow font-medium border-2 border-snow dark:border-bgDark outline outline-2 outline-blurple'>Select</button>
+                            <div className="text-bgDark dark:text-snow font-medium">Please select a valid minecraft skin</div>
+                            <div className="text-bgDark dark:text-snow font-thin">Or just use an <button onClick={ () => setInputSkin(testskin) } className='text-blurple'>example</button></div>
+                            <button onClick={ () => inputFile.current.click() } className='bg-blurple p-2 px-3 mt-3 rounded-md text-snow font-medium border-2 border-snow dark:border-bgDark outline outline-2 outline-blurple'>Select skin</button>
                         </div>
                     }
             </section>

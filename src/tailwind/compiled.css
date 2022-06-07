@@ -862,6 +862,10 @@ Ensure the default browser behavior of the `hidden` attribute.
   font-weight: 700;
 }
 
+.font-thin {
+  font-weight: 100;
+}
+
 .text-blurple {
   color: var(--blurple);
 }
