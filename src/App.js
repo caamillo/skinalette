@@ -372,8 +372,8 @@ function App() {
                     </div>
                 </div>
             </nav>
-            <div className="theme absolute right-0 bottom-0">
-                <button onClick={() => toggleNightMode()} type='button' className='flex items-center justify-center w-[50px] h-[50px] bg-blurple rounded-md m-5 text-[#fff]'><img src={ iconTheme } className='w-6'/></button>
+            <div className="theme absolute md:right-0 bottom-0 mb-4 md:mb-[0px] left-1/2 md:left-auto ml-[-25px] md:ml-[0px]">
+                <button onClick={() => toggleNightMode()} type='button' className='flex items-center justify-center w-[50px] h-[50px] bg-blurple rounded-md md:m-5 text-[#fff] border-2 border-snow dark:border-bgDark outline outline-2 outline-blurple'><img src={ iconTheme } className='w-6'/></button>
             </div>
             <section id="home" className='flex items-center justify-center w-screen h-screen'>
                     <div id="skincard" className='border-2 rounded border-blurple'>
