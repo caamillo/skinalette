@@ -560,6 +560,18 @@ Ensure the default browser behavior of the `hidden` attribute.
   margin-left: -25px;
 }
 
+.mb-2 {
+  margin-bottom: 0.5rem;
+}
+
+.mt-2 {
+  margin-top: 0.5rem;
+}
+
+.mt-3 {
+  margin-top: 0.75rem;
+}
+
 .block {
   display: block;
 }
@@ -708,6 +720,10 @@ Ensure the default browser behavior of the `hidden` attribute.
   border-width: 4px;
 }
 
+.border {
+  border-width: 1px;
+}
+
 .border-blurple {
   border-color: var(--blurple);
 }
@@ -773,6 +789,14 @@ Ensure the default browser behavior of the `hidden` attribute.
   padding: 1.5rem;
 }
 
+.p-3 {
+  padding: 0.75rem;
+}
+
+.p-2 {
+  padding: 0.5rem;
+}
+
 .px-5 {
   padding-left: 1.25rem;
   padding-right: 1.25rem;
@@ -781,6 +805,11 @@ Ensure the default browser behavior of the `hidden` attribute.
 .px-3 {
   padding-left: 0.75rem;
   padding-right: 0.75rem;
+}
+
+.px-4 {
+  padding-left: 1rem;
+  padding-right: 1rem;
 }
 
 .pl-3 {
@@ -813,6 +842,14 @@ Ensure the default browser behavior of the `hidden` attribute.
   font-weight: 600;
 }
 
+.font-normal {
+  font-weight: 400;
+}
+
+.font-bold {
+  font-weight: 700;
+}
+
 .text-blurple {
   color: var(--blurple);
 }
@@ -828,6 +865,10 @@ Ensure the default browser behavior of the `hidden` attribute.
 
 .text-snow {
   color: var(--snow);
+}
+
+.text-bgDark {
+  color: var(--bgDark);
 }
 
 .shadow-xl {
@@ -894,6 +935,19 @@ Ensure the default browser behavior of the `hidden` attribute.
 
 .dark .dark\:text-bgDark {
   color: var(--bgDark);
+}
+
+.dark .dark\:text-\[\#000\] {
+  --tw-text-opacity: 1;
+  color: rgb(0 0 0 / var(--tw-text-opacity));
+}
+
+.dark .dark\:text-snow {
+  color: var(--snow);
+}
+
+.dark .dark\:text-lightblurple {
+  color: var(--lightblurple);
 }
 
 @media (min-width: 800px) {

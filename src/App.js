@@ -20,8 +20,8 @@ import Color from './components/Color'
 import './tailwind/compiled.css'
 
 // Icons
-import sun from './icons/sun.svg'
-import moon from './icons/moon.svg'
+import { ReactComponent as Sun } from './icons/sun.svg'
+import { ReactComponent as Moon } from './icons/moon.svg'
 
 let changePalette, targetColorId, targetChangeColor, skin, changeSkin, colorsused, setPalette, colorToChoose, changeColorToChoose, isNightOutside, setIsNightOutside
 let changing = false
@@ -240,13 +240,13 @@ function App() {
     const palette = JSON.parse(localStorage.getItem('palette'))
     const [colors, setColors] = useState(palette !== null ? palette : [])
     const [colorpicker,setColorPicker] = useState(null)
-    const [inputskin, setInputSkin] = useState(localStorage.getItem('skin') !== null ? localStorage.getItem('skin') : testskin)
+    const [inputskin, setInputSkin] = useState(localStorage.getItem('skin') !== null ? localStorage.getItem('skin') : null)
     const [orbit, setOrbit] = useState(null)
     const [choseColor, setChoseColor] = useState(null)
     const [heightSkin, setHeightSkin] = useState(Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0) < mdSize ? 250 : 300)
     const [isNight, setIsNight] = useState(localStorage.getItem('darkmode') != null ? localStorage.getItem('darkmode') === 'true' : (window.matchMedia != null ? window.matchMedia('(prefers-color-scheme: dark)').matches : false)) // false is the 'default'
     const [bgCanvas, setBgCanvas] = useState(isNight ? computedDocument.getPropertyValue('--bgDark') : computedDocument.getPropertyValue('--snow'))
-    const [iconTheme, setIconTheme] = useState(isNight ? sun : moon)
+    const [IconTheme, setIconTheme] = useState(isNight ? Sun : Moon)
     const inputFile = useRef(null)
 
     useEffect(() => {
@@ -261,7 +261,7 @@ function App() {
 
     useEffect(() => {
         const t = setInterval(() => {
-            orbit.saveState()
+            if (orbit != null) orbit.saveState()
         }, 1E3)
         return () => clearInterval(t)
     })
@@ -271,7 +271,7 @@ function App() {
         setIsNightOutside = setIsNight
         if (isNight) { document.documentElement.classList.add('dark'); setBgCanvas(computedDocument.getPropertyValue('--bgDark')) }
         else { document.documentElement.classList.remove('dark'); setBgCanvas('' + computedDocument.getPropertyValue('--snow')) }
-        setIconTheme(isNight ? sun : moon)
+        setIconTheme(isNight ? Sun : Moon)
         localStorage.setItem('darkmode', isNight)
     }, [isNight])
 
@@ -279,6 +279,7 @@ function App() {
         async function getPixels(){
             if (JSON.parse(localStorage.getItem('palette')) === null) setColors(getPalette(await getImageData(inputskin)))
         }
+        if (inputskin === null) return
         const canvasSkin = document.getElementById("skin-container")
         const skinViewer = new FXAASkinViewer({
             canvas: canvasSkin,
@@ -373,41 +374,50 @@ function App() {
                 </div>
             </nav>
             <div className="theme absolute md:right-0 bottom-0 mb-4 md:mb-[0px] left-1/2 md:left-auto ml-[-25px] md:ml-[0px]">
-                <button onClick={() => toggleNightMode()} type='button' className='flex items-center justify-center w-[50px] h-[50px] bg-blurple rounded-md md:m-5 text-[#fff] border-2 border-snow dark:border-bgDark outline outline-2 outline-blurple'><img src={ iconTheme } className='w-6'/></button>
+                <button onClick={() => toggleNightMode()} type='button' className='flex items-center justify-center w-[50px] h-[50px] bg-blurple rounded-md md:m-5 border-2 border-snow dark:border-bgDark outline outline-2 outline-blurple'><IconTheme fill='var(--snow)' className='w-6'/></button>
             </div>
+            <input type='file' className='hidden' ref={ inputFile } onChange={ (e) => {
+                const reader = new FileReader()
+                reader.addEventListener('load', async () => {
+                    const palette = getPalette(await getImageData(reader.result))
+                    localStorage.setItem('skin', reader.result)
+                    localStorage.setItem('palette', JSON.stringify(palette))
+                    setInputSkin(reader.result)
+                    setColors(palette)
+                })
+                reader.readAsDataURL(e.target.files[0])
+            }}/>
             <section id="home" className='flex items-center justify-center w-screen h-screen'>
-                    <div id="skincard" className='border-2 rounded border-blurple'>
-                        <div className="content md:flex md:items-center block">
-                            <div className="avatar">
-                                <div className="render">
-                                    <canvas id='skin-container'/>
-                                </div>
-                                <div className="change flex items-center justify-center mb-5 space-x-2">
-                                    <input type='file' ref={ inputFile } onChange={ (e) => {
-                                        const reader = new FileReader()
-                                        reader.addEventListener('load', async () => {
-                                            let palette = getPalette(await getImageData(reader.result))
-                                            localStorage.setItem('skin', reader.result)
-                                            localStorage.setItem('palette', JSON.stringify(palette))
-                                            setColors(palette)
-                                            setInputSkin(reader.result)
-                                        })
-                                        reader.readAsDataURL(e.target.files[0])
-                                    }} style={{ display: 'none' }}/>
-                                    <div className="buttons table-fixed">
-
+                    { inputskin && 
+                        <div id="skincard" className='border-2 rounded border-blurple'>
+                            <div className="content md:flex md:items-center block">
+                                <div className="avatar">
+                                    <div className="render">
+                                        <canvas id='skin-container'/>
                                     </div>
-                                    <button type='button' onClick={ () => inputFile.current.click() } className='border-2 border-blurple p-1 px-5 text-blurple rounded-md font-radiocanada font-semibold'>Change</button>
-                                    <a download={Math.floor(Math.random() * 999999999) + '.png'} href={ inputskin } className='border-2 border-blurple p-1 px-3 text-snow dark:text-bgDark bg-blurple rounded-md font-radiocanada font-semibold'>Download</a>
+                                    <div className="change flex items-center justify-center mb-5 space-x-2">
+                                        <div className="buttons table-fixed">
+
+                                        </div>
+                                        <button type='button' onClick={ () => inputFile.current.click() } className='border-2 border-blurple p-1 px-5 text-blurple rounded-md font-radiocanada font-semibold'>Change</button>
+                                        <a download={Math.floor(Math.random() * 999999999) + '.png'} href={ inputskin } className='border-2 border-blurple p-1 px-3 text-snow dark:text-bgDark bg-blurple rounded-md font-radiocanada font-semibold'>Download</a>
+                                    </div>
                                 </div>
-                            </div>
-                            <div className='colors flex justify-center items-start md:block overflow-x-hidden overflow-auto m-5 h-[170px] md:h-auto md:max-h-[250px]' onMouseMove={getPointerPos}>
-                                <div id="colors" className="grid grid-cols-3 m-auto gap-2 md:pr-3 child:mx-auto">
-                                    { colors.map(({ color, id }, i) => i > -1 ? <Color colorstart = { color } key = { Math.floor(Math.random() * 999999999) } id = { i } colorChange = { colorChange } /> : null) }
+                                <div className='colors flex justify-center items-start md:block overflow-x-hidden overflow-auto m-5 h-[170px] md:h-auto md:max-h-[250px]' onMouseMove={getPointerPos}>
+                                    <div id="colors" className="grid grid-cols-3 m-auto gap-2 md:pr-3 child:mx-auto">
+                                        { colors.map(({ color, id }, i) => i > -1 ? <Color colorstart = { color } key = { Math.floor(Math.random() * 999999999) } id = { i } colorChange = { colorChange } /> : null) }
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
+                    }
+                    { !inputskin && 
+                        <div className='text-center'>
+                            <div className="text-bgDark dark:text-snow">Please select a valid minecraft skin</div>
+                            <div className="text-bgDark dark:text-snow">Or just use an <button onClick={ () => setInputSkin(testskin) } className='text-blurple'>example</button></div>
+                            <button onClick={ () => inputFile.current.click() } className='bg-blurple p-2 px-3 mt-3 rounded-md text-snow font-medium border-2 border-snow dark:border-bgDark outline outline-2 outline-blurple'>Select</button>
+                        </div>
+                    }
             </section>
         </div>
     );
