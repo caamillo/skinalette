@@ -19,6 +19,10 @@ import Color from './components/Color'
 // Tailwind
 import './tailwind/compiled.css'
 
+// Icons
+import sun from './icons/sun.svg'
+import moon from './icons/moon.svg'
+
 let changePalette, targetColorId, targetChangeColor, skin, changeSkin, colorsused, setPalette, colorToChoose, changeColorToChoose, isNightOutside, setIsNightOutside
 let changing = false
 
@@ -242,6 +246,7 @@ function App() {
     const [heightSkin, setHeightSkin] = useState(Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0) < mdSize ? 250 : 300)
     const [isNight, setIsNight] = useState(localStorage.getItem('darkmode') === 'true')
     const [bgCanvas, setBgCanvas] = useState(isNight ? computedDocument.getPropertyValue('--bgDark') : computedDocument.getPropertyValue('--snow'))
+    const [iconTheme, setIconTheme] = useState(isNight ? sun : moon)
     const inputFile = useRef(null)
 
     useEffect(() => {
@@ -266,6 +271,7 @@ function App() {
         setIsNightOutside = setIsNight
         if (isNight) { document.documentElement.classList.add('dark'); setBgCanvas(computedDocument.getPropertyValue('--bgDark')) }
         else { document.documentElement.classList.remove('dark'); setBgCanvas('' + computedDocument.getPropertyValue('--snow')) }
+        setIconTheme(isNight ? sun : moon)
         localStorage.setItem('darkmode', isNight)
     }, [isNight])
 
@@ -274,13 +280,6 @@ function App() {
             if (JSON.parse(localStorage.getItem('palette')) === null) setColors(getPalette(await getImageData(inputskin)))
         }
         const canvasSkin = document.getElementById("skin-container")
-        canvasSkin.animate(
-            [
-                { opacity: 0 },
-                { opacity: 1 }
-            ],
-            { duration: 1E3 }
-        )
         const skinViewer = new FXAASkinViewer({
             canvas: canvasSkin,
             width: 300,
@@ -288,6 +287,13 @@ function App() {
             skin: inputskin,
             background: bgCanvas.trim()
         })
+        canvasSkin.animate(
+            [
+                { opacity: 0 },
+                { opacity: 1 }
+            ],
+            { duration: 1E3 }
+        )
         let control = null
         if (orbit != null) {
             control = orbit
@@ -367,7 +373,7 @@ function App() {
                 </div>
             </nav>
             <div className="theme absolute right-0 bottom-0">
-                <button onClick={() => toggleNightMode()} type='button' className='w-[50px] h-[50px] bg-blurple rounded-md m-5 text-[#fff]'></button>
+                <button onClick={() => toggleNightMode()} type='button' className='flex items-center justify-center w-[50px] h-[50px] bg-blurple rounded-md m-5 text-[#fff]'><img src={ iconTheme } className='w-6'/></button>
             </div>
             <section id="home" className='flex items-center justify-center w-screen h-screen'>
                     <div id="skincard" className='border-2 rounded border-blurple'>
