@@ -155,14 +155,18 @@ const changeView = async (changingColor) => {
     const ctx = cvs.getContext('2d')
     try{
         if (colorsused.length == 0) colorsused = (JSON.parse(localStorage.getItem('palette')) === null) ? getPalette({
-            width: img.width,
-            height: img.height,
+            img: {
+                width: img.width,
+                height: img.height
+            },
             data: data
         }) : JSON.parse(localStorage.getItem('palette'))
     }catch(Error){
         colorsused = getPalette({
-            width: img.width,
-            height: img.height,
+            img: {
+                width: img.width,
+                height: img.height
+            },
             data: data
         })
     }
