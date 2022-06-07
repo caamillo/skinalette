@@ -326,22 +326,23 @@ function App() {
             changeColorToChoose = setChoseColor
         })()
     }, [inputskin, heightSkin, bgCanvas])
-
-    document.documentElement.addEventListener('click', (e) => {
+    window.addEventListener('click', (e) => {
         const parent = document.getElementById('colorpicker')
         if(document.getElementById('colorpicker') && (e.target.classList.contains('color') !== true && parent.contains(e.target) !== true && e.target.id !== 'skin-container')) {
             document.getElementById('colorpicker').style.display = 'none'
         }
-    })
+    },)
 
     window.addEventListener('resize', () => {
+        console.log('resize')
         const vw = Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0)
+        if (true) setIsMobile(true)
         
-        if (vw < mdSize && isMobile !== true) setIsMobile(true)
-        else if (vw >= mdSize && isMobile !== false) setIsMobile(false)
-        
-        if (vw < mdSize && heightSkin !== 250) setHeightSkin(250)
-        else if (vw >= mdSize && heightSkin !== 300) setHeightSkin(300)
+        //if (vw < mdSize && isMobile !== true) setIsMobile(true)
+        //else if (vw >= mdSize && isMobile !== false) setIsMobile(false)
+
+        //if (vw < mdSize && heightSkin !== 250) setHeightSkin(250)
+        //else if (vw >= mdSize && heightSkin !== 300) setHeightSkin(300)
 
         const elementColor = document.getElementsByClassName('color').length > 0 ? document.getElementsByClassName('color')[targetColorId] : null
 
