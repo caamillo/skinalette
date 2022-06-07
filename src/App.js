@@ -245,7 +245,14 @@ function App() {
     const [isNight, setIsNight] = useState(localStorage.getItem('darkmode') != null ? localStorage.getItem('darkmode') === 'true' : (window.matchMedia != null ? window.matchMedia('(prefers-color-scheme: dark)').matches : false)) // false is the 'default'
     const [bgCanvas, setBgCanvas] = useState(isNight ? computedDocument.getPropertyValue('--bgDark') : computedDocument.getPropertyValue('--snow'))
     const [IconTheme, setIconTheme] = useState(isNight ? Sun : Moon)
+    const [errors, setErrors] = useState([])
     const inputFile = useRef(null)
+
+    useEffect(() => {
+        const lowest = Math.min(...errors.map(error => error.id))
+        const errorsFiltered = (errors.filter(error => error.id !== lowest))
+        if (errors.length > 3) setErrors(errorsFiltered.sort((x, y) => {return x.id - y.id}).map((error, i) => { error.id = i; return error }))
+    }, [errors])
 
     useEffect(() => {
         if (choseColor != null) {
@@ -377,13 +384,17 @@ function App() {
                 <button onClick={() => setIsNightOutside(!isNightOutside)} type='button' className='flex items-center justify-center w-[50px] h-[50px] bg-blurple rounded-md md:m-5 border-2 border-snow dark:border-bgDark outline outline-2 outline-blurple'><IconTheme fill='var(--snow)' className='w-6'/></button>
             </div>
             <div className="error-container space-y-3 absolute left-0 bottom-0 mx-5 mb-8 align-bottom">
-                <Error id='2' />
-                <Error id='1' />
-                <Error id='0' />
+                { errors.sort((x, y) => { return x.id - y.id }).map(error => <Error id = { Math.abs(error.id - (errors.length - 1)) } title = { error.title } desc = { error.desc } key = { Math.floor(Math.random() * 999999999) }/>) }
             </div>
             <input type='file' className='hidden' ref={ inputFile } onChange={ (e) => {
                 const reader = new FileReader()
                 reader.addEventListener('load', async () => {
+                    console.log(errors.length)
+                    setErrors([...errors, {
+                        id: errors.length,
+                        title: 'error title ' + errors.length,
+                        desc: 'error desc'
+                    }])
                     if (!(await isMinecraftSkin(reader.result))) return
                     const palette = getPalette(await getImageData(reader.result))
                     localStorage.setItem('skin', reader.result)

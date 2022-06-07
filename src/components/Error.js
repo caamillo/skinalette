@@ -5,7 +5,7 @@ const offset = 1
 const maxerrors = 3
 
 const Color = ({ id, title, desc }) => {
-    const opacityNew = computedDocument.getPropertyValue('--maxerroropacity') - ((maxerrors * parseInt(id)) / 10) * offset
+    const opacityNew = computedDocument.getPropertyValue('--maxerroropacity') - ((maxerrors * id) / 10) * offset
 
     return(
         <div className="alert text-snow w-[300px] bg-darkErrorDark rounded-md" style={{ opacity: opacityNew }}>
@@ -14,10 +14,10 @@ const Color = ({ id, title, desc }) => {
                 <img src={ warning } className='w-12' alt="error"/>
                 <div className='text-sm break-all text-[#fff]/30'>
                     <div className="error-title font-medium">
-                        Error Title
+                        { title }
                     </div>
                     <div className="error-content font-thin">
-                        Error Description
+                        { desc }
                     </div>
                 </div>
             </div>
