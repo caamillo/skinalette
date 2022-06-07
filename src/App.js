@@ -23,6 +23,7 @@ import './tailwind/compiled.css'
 // Icons
 import { ReactComponent as Sun } from './icons/sun.svg'
 import { ReactComponent as Moon } from './icons/moon.svg'
+import { ReactComponent as Warning } from './icons/warning.svg'
 
 let changePalette, targetColorId, targetChangeColor, skin, changeSkin, colorsused, setPalette, colorToChoose, changeColorToChoose, isNightOutside, setIsNightOutside
 let changing = false
@@ -246,6 +247,7 @@ function App() {
     const [bgCanvas, setBgCanvas] = useState(isNight ? computedDocument.getPropertyValue('--bgDark') : computedDocument.getPropertyValue('--snow'))
     const [IconTheme, setIconTheme] = useState(isNight ? Sun : Moon)
     const [errors, setErrors] = useState([])
+    const [isMobile, setIsMobile] = useState(Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0) < mdSize)
     const inputFile = useRef(null)
 
     useEffect(() => {
@@ -334,6 +336,10 @@ function App() {
 
     window.addEventListener('resize', () => {
         const vw = Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0)
+        
+        if (vw < mdSize && isMobile !== true) setIsMobile(true)
+        else if (vw >= mdSize && isMobile !== false) setIsMobile(false)
+        
         if (vw < mdSize && heightSkin !== 250) setHeightSkin(250)
         else if (vw >= mdSize && heightSkin !== 300) setHeightSkin(300)
 
@@ -383,9 +389,22 @@ function App() {
             <div className="theme absolute md:right-0 bottom-0 mb-4 md:mb-[0px] left-1/2 md:left-auto ml-[-25px] md:ml-[0px]">
                 <button onClick={() => setIsNightOutside(!isNightOutside)} type='button' className='flex items-center justify-center w-[50px] h-[50px] bg-blurple rounded-md md:m-5 border-2 border-snow dark:border-bgDark outline outline-2 outline-blurple'><IconTheme fill='var(--snow)' className='w-6'/></button>
             </div>
-            <div className="error-container space-y-3 absolute left-0 bottom-0 mx-5 mb-8 align-bottom">
-                { errors.sort((x, y) => { return x.id - y.id }).map(error => <Error id = { Math.abs(error.id - (errors.length - 1)) } title = { error.title } desc = { error.desc } key = { Math.floor(Math.random() * 999999999) }/>) }
-            </div>
+            { isMobile && errors.length > 0 &&
+                <div className='alert-mobile absolute text-[#fff] top-0 bg-darkErrorDark w-full'>
+                    <div className='flex justify-center items-center justify-center space-x-2'>
+                        <div className="error-head flex justify-center items-center space-x-1">
+                        <Warning className='w-3' fill='rgb(0,0,0,0.5)' />
+                            <div className="error-title text-[#000]/50 font-medium">{ errors.at(-1).title }</div>
+                        </div>
+                        <div className="error-message text-[#fff]/50 font-thin text-xs">{ errors.at(-1).desc }</div>
+                    </div>
+                </div>
+            }
+            { !isMobile &&
+                <div className="error-container space-y-3 absolute left-0 bottom-0 mx-5 mb-8 align-bottom">
+                    { errors.sort((x, y) => { return x.id - y.id }).map(error => <Error id = { Math.abs(error.id - (errors.length - 1)) } title = { error.title } desc = { error.desc } key = { Math.floor(Math.random() * 999999999) }/>) }
+                </div>
+            }
             <input type='file' className='hidden' ref={ inputFile } onChange={ (e) => {
                 const reader = new FileReader()
                 reader.addEventListener('load', async () => {
