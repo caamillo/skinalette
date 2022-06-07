@@ -244,7 +244,7 @@ function App() {
     const [orbit, setOrbit] = useState(null)
     const [choseColor, setChoseColor] = useState(null)
     const [heightSkin, setHeightSkin] = useState(Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0) < mdSize ? 250 : 300)
-    const [isNight, setIsNight] = useState(localStorage.getItem('darkmode') === 'true')
+    const [isNight, setIsNight] = useState(localStorage.getItem('darkmode') != null ? localStorage.getItem('darkmode') === 'true' : (window.matchMedia != null ? window.matchMedia('(prefers-color-scheme: dark)').matches : false)) // false is the 'default'
     const [bgCanvas, setBgCanvas] = useState(isNight ? computedDocument.getPropertyValue('--bgDark') : computedDocument.getPropertyValue('--snow'))
     const [iconTheme, setIconTheme] = useState(isNight ? sun : moon)
     const inputFile = useRef(null)
