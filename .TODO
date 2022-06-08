@@ -13,6 +13,8 @@ About:
 
 Style:
     when mousehover animation "alette" where a colorpicker takes randomly color from a very tiny [ absolute ] color picker
+    Fix responsive button
+    Fix safari outline
 
 Useful:
     Refactor the fucking code

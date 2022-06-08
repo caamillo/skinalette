@@ -8,3 +8,20 @@ I built that using some modern technologies such as: **React**, **Tailwind** and
 I panicked for days because I could not find a good library for parsing pixels in the image and replacing them, but here's how I figured it out:
 
 ![](https://i.imgur.com/GyUCLl0.png)
+
+I wrote methods for parsing images through their bitmaps.
+ 
+### 1. Parse the bitmap
+ 
+The first process is to get the input skin, and if it is valid ( check if the bitmap length is `64^2 * 4` ), a method for parsing the bitmap to an object of pixels list comes out. Note: this is NOT an app for replacing skin pixel colors. In fact, it will store all the initial pixel colors, and you will constantly change only them, not the newest updated ones. This is because if the app replaces the pixels by colors and not by an initial array of the stored pixels, the pixels may overlap each other. So, there is an array of initial pixels in the array for each color.
+ 
+Example:
+```
+[
+   { id: 0, hex: '#fff', rgb: [ 255, 255, 255, 255 ], pixels: [ 0, 1, 5, 6, 7, 9, ...N0 ] },
+   { id: 1, hex: '#000', rgb: [ 0, 0, 0, 255 ], pixels: [ 2, 3, 4, 8, 10, 11, ...N1 ] }
+]
+```
+Note that invisible pixels `rgb(0, 0, 0, 0)` around the skin are not stored for efficiency.
+ 
+![bitmap](https://i.imgur.com/p0YFXPz.png)
