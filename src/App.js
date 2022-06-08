@@ -348,6 +348,25 @@ function App() {
                     setTimeout(() => firstError.remove(), 150)
                 }, 3000)
             }
+        } else if (isMobile && document.getElementsByClassName('alert-mobile')[0] != null) {
+            document.getElementsByClassName('alert-mobile')[0].animate(
+                [
+                    { transform: 'translateY(-25px)', opacity: 0 },
+                    { transform: 'translateY(0px)', opacity: 1 }
+                ],
+                { duration: 600 }
+            )
+            document.getElementsByClassName('alert-mobile')[0].style.opacity = 1
+            setTimeout(() => {
+                document.getElementsByClassName('alert-mobile')[0].animate(
+                    [
+                        { transform: 'translateY(0px)', opacity: 1 },
+                        { transform: 'translateY(-25px)', opacity: 0 }
+                    ],
+                    { duration: 300 }
+                )
+                setTimeout(() => setErrors([]), 300)
+            }, 3000)
         }
 
     }, [errors])
@@ -455,7 +474,7 @@ function App() {
                 <button onClick={() => setIsNightOutside(!isNightOutside)} type='button' className='flex items-center justify-center w-[50px] h-[50px] bg-blurple rounded-md md:m-5 border-2 border-snow dark:border-bgDark outline outline-2 outline-blurple'><IconTheme fill='var(--snow)' className='w-6'/></button>
             </div>
             { isMobile && errors.length > 0 &&
-                <div className='alert-mobile absolute text-[#fff] top-0 bg-darkErrorDark w-full'>
+                <div className='alert-mobile absolute text-[#fff] top-0 bg-darkErrorDark w-full p-1' style={{ opacity: 0 }}>
                     <div className='flex justify-center items-center justify-center space-x-2'>
                         <div className="error-head flex justify-center items-center space-x-1">
                         <Warning className='w-3' fill='rgb(0,0,0,0.5)' />
