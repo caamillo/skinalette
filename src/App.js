@@ -12,6 +12,7 @@ import testskin from './img/input.png'
 // NPM
 import { IdleAnimation, createOrbitControls, FXAASkinViewer } from 'skinview3d';
 import { HexColorPicker } from "react-colorful"
+import { useMediaQuery } from 'usehooks-ts'
 
 // Components
 import Color from './components/Color'
@@ -247,8 +248,49 @@ function App() {
     const [bgCanvas, setBgCanvas] = useState(isNight ? computedDocument.getPropertyValue('--bgDark') : computedDocument.getPropertyValue('--snow'))
     const [IconTheme, setIconTheme] = useState(isNight ? Sun : Moon)
     const [errors, setErrors] = useState([])
-    const [isMobile, setIsMobile] = useState(Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0) < mdSize)
+    const isMobile = useMediaQuery(`(max-width: ${mdSize}px)`)
     const inputFile = useRef(null)
+
+    useEffect(() => {
+        if (isMobile && heightSkin !== 250) setHeightSkin(250)
+        else if (!isMobile && heightSkin !== 300) setHeightSkin(300)
+    }, [isMobile])
+
+    useEffect(() => {
+        const mouseClickEvent = (e) => {
+            const parent = document.getElementById('colorpicker')
+            if(document.getElementById('colorpicker') && (e.target.classList.contains('color') !== true && parent.contains(e.target) !== true && e.target.id !== 'skin-container')) {
+                document.getElementById('colorpicker').style.display = 'none'
+            }
+        }
+
+        const resizeEvent = () => {
+            const vw = Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0)
+    
+            const elementColor = document.getElementsByClassName('color').length > 0 ? document.getElementsByClassName('color')[targetColorId] : null
+    
+            if (elementColor == null) return
+    
+            const rect = elementColor.getBoundingClientRect()
+    
+            const colorPicker = document.getElementById('colorpicker')
+        
+            const offsetY = 15 + (vw < mdSize ? -150 : 0)
+            const offsetX = 15 +  (pointerX >= vw / 2 && vw < mdSize ? -270 : 0)
+    
+            colorPicker.style.top = (rect.top + offsetY) + 'px' 
+            colorPicker.style.left = (rect.left + elementColor.offsetWidth + offsetX) + 'px'
+        }
+
+
+        window.addEventListener('click', mouseClickEvent)
+        window.addEventListener('resize', resizeEvent)
+
+        return () => {
+            window.removeEventListener('click', mouseClickEvent)
+            window.removeEventListener('resize', resizeEvent)
+        }
+    })
 
     useEffect(() => {
         const lowest = Math.min(...errors.map(error => error.id))
@@ -326,38 +368,6 @@ function App() {
             changeColorToChoose = setChoseColor
         })()
     }, [inputskin, heightSkin, bgCanvas])
-    window.addEventListener('click', (e) => {
-        const parent = document.getElementById('colorpicker')
-        if(document.getElementById('colorpicker') && (e.target.classList.contains('color') !== true && parent.contains(e.target) !== true && e.target.id !== 'skin-container')) {
-            document.getElementById('colorpicker').style.display = 'none'
-        }
-    },)
-
-    window.addEventListener('resize', () => {
-        console.log('resize')
-        const vw = Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0)
-        if (true) setIsMobile(true)
-        
-        //if (vw < mdSize && isMobile !== true) setIsMobile(true)
-        //else if (vw >= mdSize && isMobile !== false) setIsMobile(false)
-
-        //if (vw < mdSize && heightSkin !== 250) setHeightSkin(250)
-        //else if (vw >= mdSize && heightSkin !== 300) setHeightSkin(300)
-
-        const elementColor = document.getElementsByClassName('color').length > 0 ? document.getElementsByClassName('color')[targetColorId] : null
-
-        if (elementColor == null) return
-
-        const rect = elementColor.getBoundingClientRect()
-
-        const colorPicker = document.getElementById('colorpicker')
-    
-        const offsetY = 15 + (vw < mdSize ? -150 : 0)
-        const offsetX = 15 +  (pointerX >= vw / 2 && vw < mdSize ? -270 : 0)
-
-        colorPicker.style.top = (rect.top + offsetY) + 'px' 
-        colorPicker.style.left = (rect.left + elementColor.offsetWidth + offsetX) + 'px'
-    })
     
     return (
         <div id="container">
