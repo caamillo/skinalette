@@ -236,6 +236,23 @@ const colorChange = (id, start, changeColor) => {
 
 const isMinecraftSkin = async (src) => { return ((await getImageData(src)).data.length === (Math.pow(skinSize, 2)) * 4) }
 
+const findLastError = () => {
+    const errors = document.getElementsByClassName('error')
+    if (errors.length > 0) return errors[errors.length - 1]
+    return null
+}
+
+const findFirstError = () => {
+    const errors = document.getElementsByClassName('error')
+    if (errors.length > 0) return errors[0]
+    return null
+}
+
+const sendError = (error, errors, setErrors, inputFile) => {
+    setErrors([...errors, error])
+    inputFile.current.value = ''
+}
+
 function App() { 
     const palette = JSON.parse(localStorage.getItem('palette'))
     const [colors, setColors] = useState(palette !== null ? palette : [])
@@ -291,11 +308,48 @@ function App() {
             window.removeEventListener('resize', resizeEvent)
         }
     })
-
     useEffect(() => {
         const lowest = Math.min(...errors.map(error => error.id))
         const errorsFiltered = (errors.filter(error => error.id !== lowest))
-        if (errors.length > 3) setErrors(errorsFiltered.sort((x, y) => {return x.id - y.id}).map((error, i) => { error.id = i; return error }))
+        // if (errors.length > 3) setErrors(errorsFiltered.sort((x, y) => {return x.id - y.id}).map((error, i) => { error.id = i; return error }))
+        const lastError = findLastError()
+        if (!isMobile) {
+            if (lastError != null) {
+                const errors2 = errors.filter(error => error.id !== lowest)
+                const errorsDom = []
+                for (let error of errors2) errorsDom.push(document.getElementById(`error${error.id}`))
+                for (let error of errorsDom) {
+                    if (error == null) continue
+                    error.animate(
+                        [
+                            { transform: 'translateY(100px)' },
+                            { transform: 'translateY(0px)' }
+                        ],
+                        { duration: 150 }
+                    )
+                }
+                lastError.animate(
+                    [
+                        { transform: 'translateX(-300px)', opacity: 0 },
+                        { transform: 'translateX(0px)', opacity: computedDocument.getPropertyValue('--maxerroropacity') }
+                    ],
+                    { duration: 150 }
+                )
+                lastError.style.opacity = computedDocument.getPropertyValue('--maxerroropacity')
+                setTimeout(() => {
+                    const firstError = findFirstError()
+                    firstError.animate(
+                        [
+                            { opacity: firstError.style.opacity },
+                            { opacity: 0 }
+                        ],
+                        { duration: 150 }
+                    )
+                    setTimeout(() => firstError.remove(), 150)
+                }, 3000)
+            }
+        }
+
     }, [errors])
 
     useEffect(() => {
@@ -407,25 +461,23 @@ function App() {
                         <Warning className='w-3' fill='rgb(0,0,0,0.5)' />
                             <div className="error-title text-[#000]/50 font-medium">{ errors.at(-1).title }</div>
                         </div>
-                        <div className="error-message text-[#fff]/50 font-thin text-xs">{ errors.at(-1).desc }</div>
+                        <div className="error-message text-[#fff]/50 font-thin text-sm">{ errors.at(-1).desc }</div>
                     </div>
                 </div>
             }
             { !isMobile &&
                 <div className="error-container space-y-3 absolute left-0 bottom-0 mx-5 mb-8 align-bottom">
-                    { errors.sort((x, y) => { return x.id - y.id }).map(error => <Error id = { Math.abs(error.id - (errors.length - 1)) } title = { error.title } desc = { error.desc } key = { Math.floor(Math.random() * 999999999) }/>) }
+                    { errors.sort((x, y) => { return x.id - y.id }).map(error => <Error id = { Math.abs(error.id - (errors.length - 1)) } title = { error.title } desc = { error.desc } key = { error.id }/>) }
                 </div>
             }
             <input type='file' className='hidden' ref={ inputFile } onChange={ (e) => {
                 const reader = new FileReader()
                 reader.addEventListener('load', async () => {
-                    console.log(errors.length)
-                    setErrors([...errors, {
+                    if (!(await isMinecraftSkin(reader.result))) return sendError({
                         id: errors.length,
-                        title: 'error title ' + errors.length,
-                        desc: 'error desc'
-                    }])
-                    if (!(await isMinecraftSkin(reader.result))) return
+                        title: 'Choosen file is not a valid skin',
+                        desc: 'Please choose a valid one'
+                    }, errors, setErrors, inputFile)
                     const palette = getPalette(await getImageData(reader.result))
                     localStorage.setItem('skin', reader.result)
                     localStorage.setItem('palette', JSON.stringify(palette))
