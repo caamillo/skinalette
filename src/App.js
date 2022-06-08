@@ -12,9 +12,11 @@ import testskin from './img/input.png'
 // NPM
 import { IdleAnimation, createOrbitControls, FXAASkinViewer } from 'skinview3d';
 import { HexColorPicker } from "react-colorful"
+import { useMediaQuery } from 'usehooks-ts'
 
 // Components
 import Color from './components/Color'
+import Error from './components/Error'
 
 // Tailwind
 import './tailwind/compiled.css'
@@ -22,6 +24,7 @@ import './tailwind/compiled.css'
 // Icons
 import { ReactComponent as Sun } from './icons/sun.svg'
 import { ReactComponent as Moon } from './icons/moon.svg'
+import { ReactComponent as Warning } from './icons/warning.svg'
 
 let changePalette, targetColorId, targetChangeColor, skin, changeSkin, colorsused, setPalette, colorToChoose, changeColorToChoose, isNightOutside, setIsNightOutside
 let changing = false
@@ -126,10 +129,6 @@ const inputChangeColor = (e) => {
     changePalette(
         <HexColorPicker color = { color } onChange={ (changingColor) => changeView(changingColor) }/>
     )
-}
-
-const toggleNightMode = async () => {
-    setIsNightOutside(!isNightOutside)
 }
 
 const getImageData = (src) => {
@@ -237,6 +236,23 @@ const colorChange = (id, start, changeColor) => {
 
 const isMinecraftSkin = async (src) => { return ((await getImageData(src)).data.length === (Math.pow(skinSize, 2)) * 4) }
 
+const findLastError = () => {
+    const errors = document.getElementsByClassName('error')
+    if (errors.length > 0) return errors[errors.length - 1]
+    return null
+}
+
+const findFirstError = () => {
+    const errors = document.getElementsByClassName('error')
+    if (errors.length > 0) return errors[0]
+    return null
+}
+
+const sendError = (error, errors, setErrors, inputFile) => {
+    setErrors([...errors, error])
+    inputFile.current.value = ''
+}
+
 function App() { 
     const palette = JSON.parse(localStorage.getItem('palette'))
     const [colors, setColors] = useState(palette !== null ? palette : [])
@@ -248,7 +264,112 @@ function App() {
     const [isNight, setIsNight] = useState(localStorage.getItem('darkmode') != null ? localStorage.getItem('darkmode') === 'true' : (window.matchMedia != null ? window.matchMedia('(prefers-color-scheme: dark)').matches : false)) // false is the 'default'
     const [bgCanvas, setBgCanvas] = useState(isNight ? computedDocument.getPropertyValue('--bgDark') : computedDocument.getPropertyValue('--snow'))
     const [IconTheme, setIconTheme] = useState(isNight ? Sun : Moon)
+    const [errors, setErrors] = useState([])
+    const isMobile = useMediaQuery(`(max-width: ${mdSize}px)`)
     const inputFile = useRef(null)
+
+    useEffect(() => {
+        if (isMobile && heightSkin !== 250) setHeightSkin(250)
+        else if (!isMobile && heightSkin !== 300) setHeightSkin(300)
+    }, [isMobile])
+
+    useEffect(() => {
+        const mouseClickEvent = (e) => {
+            const parent = document.getElementById('colorpicker')
+            if(document.getElementById('colorpicker') && (e.target.classList.contains('color') !== true && parent.contains(e.target) !== true && e.target.id !== 'skin-container')) {
+                document.getElementById('colorpicker').style.display = 'none'
+            }
+        }
+
+        const resizeEvent = () => {
+            const vw = Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0)
+    
+            const elementColor = document.getElementsByClassName('color').length > 0 ? document.getElementsByClassName('color')[targetColorId] : null
+    
+            if (elementColor == null) return
+    
+            const rect = elementColor.getBoundingClientRect()
+    
+            const colorPicker = document.getElementById('colorpicker')
+        
+            const offsetY = 15 + (vw < mdSize ? -150 : 0)
+            const offsetX = 15 +  (pointerX >= vw / 2 && vw < mdSize ? -270 : 0)
+    
+            colorPicker.style.top = (rect.top + offsetY) + 'px' 
+            colorPicker.style.left = (rect.left + elementColor.offsetWidth + offsetX) + 'px'
+        }
+
+
+        window.addEventListener('click', mouseClickEvent)
+        window.addEventListener('resize', resizeEvent)
+
+        return () => {
+            window.removeEventListener('click', mouseClickEvent)
+            window.removeEventListener('resize', resizeEvent)
+        }
+    })
+    useEffect(() => {
+        const lowest = Math.min(...errors.map(error => error.id))
+        const errorsFiltered = (errors.filter(error => error.id !== lowest))
+        // if (errors.length > 3) setErrors(errorsFiltered.sort((x, y) => {return x.id - y.id}).map((error, i) => { error.id = i; return error }))
+        const lastError = findLastError()
+        if (!isMobile) {
+            if (lastError != null) {
+                const errors2 = errors.filter(error => error.id !== lowest)
+                const errorsDom = []
+                for (let error of errors2) errorsDom.push(document.getElementById(`error${error.id}`))
+                for (let error of errorsDom) {
+                    if (error == null) continue
+                    error.animate(
+                        [
+                            { transform: 'translateY(100px)' },
+                            { transform: 'translateY(0px)' }
+                        ],
+                        { duration: 150 }
+                    )
+                }
+                lastError.animate(
+                    [
+                        { transform: 'translateX(-300px)', opacity: 0 },
+                        { transform: 'translateX(0px)', opacity: computedDocument.getPropertyValue('--maxerroropacity') }
+                    ],
+                    { duration: 150 }
+                )
+                lastError.style.opacity = computedDocument.getPropertyValue('--maxerroropacity')
+                setTimeout(() => {
+                    const firstError = findFirstError()
+                    firstError.animate(
+                        [
+                            { opacity: firstError.style.opacity },
+                            { opacity: 0 }
+                        ],
+                        { duration: 150 }
+                    )
+                    setTimeout(() => firstError.remove(), 150)
+                }, 3000)
+            }
+        } else if (isMobile && document.getElementsByClassName('alert-mobile')[0] != null) {
+            document.getElementsByClassName('alert-mobile')[0].animate(
+                [
+                    { transform: 'translateY(-25px)', opacity: 0 },
+                    { transform: 'translateY(0px)', opacity: 1 }
+                ],
+                { duration: 600 }
+            )
+            document.getElementsByClassName('alert-mobile')[0].style.opacity = 1
+            setTimeout(() => {
+                document.getElementsByClassName('alert-mobile')[0].animate(
+                    [
+                        { transform: 'translateY(0px)', opacity: 1 },
+                        { transform: 'translateY(-25px)', opacity: 0 }
+                    ],
+                    { duration: 300 }
+                )
+                setTimeout(() => setErrors([]), 300)
+            }, 3000)
+        }
+
+    }, [errors])
 
     useEffect(() => {
         if (choseColor != null) {
@@ -267,7 +388,7 @@ function App() {
         return () => clearInterval(t)
     })
 
-    useEffect(() => { // nightbutton disabled
+    useEffect(() => {
         isNightOutside = isNight
         setIsNightOutside = setIsNight
         if (isNight) { document.documentElement.classList.add('dark'); setBgCanvas(computedDocument.getPropertyValue('--bgDark')) }
@@ -320,33 +441,6 @@ function App() {
             changeColorToChoose = setChoseColor
         })()
     }, [inputskin, heightSkin, bgCanvas])
-
-    document.documentElement.addEventListener('click', (e) => {
-        const parent = document.getElementById('colorpicker')
-        if(document.getElementById('colorpicker') && (e.target.classList.contains('color') !== true && parent.contains(e.target) !== true && e.target.id !== 'skin-container')) {
-            document.getElementById('colorpicker').style.display = 'none'
-        }
-    })
-
-    window.addEventListener('resize', () => {
-        const vw = Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0)
-        if (vw < mdSize && heightSkin !== 250) setHeightSkin(250)
-        else if (vw >= mdSize && heightSkin !== 300) setHeightSkin(300)
-
-        const elementColor = document.getElementsByClassName('color').length > 0 ? document.getElementsByClassName('color')[targetColorId] : null
-
-        if (elementColor == null) return
-
-        const rect = elementColor.getBoundingClientRect()
-
-        const colorPicker = document.getElementById('colorpicker')
-    
-        const offsetY = 15 + (vw < mdSize ? -150 : 0)
-        const offsetX = 15 +  (pointerX >= vw / 2 && vw < mdSize ? -270 : 0)
-
-        colorPicker.style.top = (rect.top + offsetY) + 'px' 
-        colorPicker.style.left = (rect.left + elementColor.offsetWidth + offsetX) + 'px'
-    })
     
     return (
         <div id="container">
@@ -377,16 +471,29 @@ function App() {
                 </div>
             </nav>
             <div className="theme absolute md:right-0 bottom-0 mb-4 md:mb-[0px] left-1/2 md:left-auto ml-[-25px] md:ml-[0px]">
-                <button onClick={() => toggleNightMode()} type='button' className='flex items-center justify-center w-[50px] h-[50px] bg-blurple rounded-md md:m-5 border-2 border-snow dark:border-bgDark outline outline-2 outline-blurple'><IconTheme fill='var(--snow)' className='w-6'/></button>
+                <button onClick={() => setIsNightOutside(!isNightOutside)} type='button' className='flex items-center justify-center w-[50px] h-[50px] bg-blurple rounded-md md:m-5 border-2 border-snow dark:border-bgDark outline outline-2 outline-blurple'><IconTheme fill='var(--snow)' className='w-6'/></button>
             </div>
-            <div className="alert absolute text-snow left-0 bottom-0 m-5 hidden">
-                <div className="title">Error Title</div>
-                <div className="content">Error Desk</div>
-            </div>
+            { isMobile && errors.length > 0 &&
+                <div className='alert-mobile absolute text-[#fff] top-0 bg-lightErrorDark dark:bg-darkErrorDark w-full p-1' style={{ opacity: 0 }}>
+                    <div className='flex justify-center items-center justify-center space-x-2'>
+                        <div className="error-title text-snow dark:text-[#000]/50 font-medium text-sm">{ errors.at(-1).title }</div>
+                        <div className="error-message text-snow dark:text-[#fff]/50 font-thin text-sm">{ errors.at(-1).desc }</div>
+                    </div>
+                </div>
+            }
+            { !isMobile &&
+                <div className="error-container space-y-3 absolute left-0 bottom-0 mx-5 mb-8 align-bottom">
+                    { errors.sort((x, y) => { return x.id - y.id }).map(error => <Error id = { Math.abs(error.id - (errors.length - 1)) } title = { error.title } desc = { error.desc } isNight = { isNight } key = { error.id }/>) }
+                </div>
+            }
             <input type='file' className='hidden' ref={ inputFile } onChange={ (e) => {
                 const reader = new FileReader()
                 reader.addEventListener('load', async () => {
-                    if (!(await isMinecraftSkin(reader.result))) return
+                    if (!(await isMinecraftSkin(reader.result))) return sendError({
+                        id: errors.length,
+                        title: 'Choosen file is not a valid skin',
+                        desc: 'Please choose a valid one'
+                    }, errors, setErrors, inputFile)
                     const palette = getPalette(await getImageData(reader.result))
                     localStorage.setItem('skin', reader.result)
                     localStorage.setItem('palette', JSON.stringify(palette))
