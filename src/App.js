@@ -476,8 +476,8 @@ function App() {
             { isMobile && errors.length > 0 &&
                 <div className='alert-mobile absolute text-[#fff] top-0 bg-lightErrorDark dark:bg-darkErrorDark w-full p-1' style={{ opacity: 0 }}>
                     <div className='flex justify-center items-center justify-center space-x-2'>
-                        <div className="error-title text-snow dark:text-[#000]/50 font-medium">{ errors.at(-1).title }</div>
-                        <div className="error-message text-snow dark:text-[#fff]/50 font-thin">{ errors.at(-1).desc }</div>
+                        <div className="error-title text-snow dark:text-[#000]/50 font-medium text-sm">{ errors.at(-1).title }</div>
+                        <div className="error-message text-snow dark:text-[#fff]/50 font-thin text-sm">{ errors.at(-1).desc }</div>
                     </div>
                 </div>
             }
