@@ -388,7 +388,7 @@ function App() {
         return () => clearInterval(t)
     })
 
-    useEffect(() => { // nightbutton disabled
+    useEffect(() => {
         isNightOutside = isNight
         setIsNightOutside = setIsNight
         if (isNight) { document.documentElement.classList.add('dark'); setBgCanvas(computedDocument.getPropertyValue('--bgDark')) }
@@ -474,19 +474,16 @@ function App() {
                 <button onClick={() => setIsNightOutside(!isNightOutside)} type='button' className='flex items-center justify-center w-[50px] h-[50px] bg-blurple rounded-md md:m-5 border-2 border-snow dark:border-bgDark outline outline-2 outline-blurple'><IconTheme fill='var(--snow)' className='w-6'/></button>
             </div>
             { isMobile && errors.length > 0 &&
-                <div className='alert-mobile absolute text-[#fff] top-0 bg-darkErrorDark w-full p-1' style={{ opacity: 0 }}>
+                <div className='alert-mobile absolute text-[#fff] top-0 bg-lightErrorDark dark:bg-darkErrorDark w-full p-1' style={{ opacity: 0 }}>
                     <div className='flex justify-center items-center justify-center space-x-2'>
-                        <div className="error-head flex justify-center items-center space-x-1">
-                        <Warning className='w-3' fill='rgb(0,0,0,0.5)' />
-                            <div className="error-title text-[#000]/50 font-medium">{ errors.at(-1).title }</div>
-                        </div>
-                        <div className="error-message text-[#fff]/50 font-thin text-sm">{ errors.at(-1).desc }</div>
+                        <div className="error-title text-snow dark:text-[#000]/50 font-medium">{ errors.at(-1).title }</div>
+                        <div className="error-message text-snow dark:text-[#fff]/50 font-thin">{ errors.at(-1).desc }</div>
                     </div>
                 </div>
             }
             { !isMobile &&
                 <div className="error-container space-y-3 absolute left-0 bottom-0 mx-5 mb-8 align-bottom">
-                    { errors.sort((x, y) => { return x.id - y.id }).map(error => <Error id = { Math.abs(error.id - (errors.length - 1)) } title = { error.title } desc = { error.desc } key = { error.id }/>) }
+                    { errors.sort((x, y) => { return x.id - y.id }).map(error => <Error id = { Math.abs(error.id - (errors.length - 1)) } title = { error.title } desc = { error.desc } isNight = { isNight } key = { error.id }/>) }
                 </div>
             }
             <input type='file' className='hidden' ref={ inputFile } onChange={ (e) => {

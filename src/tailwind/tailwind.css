@@ -12,6 +12,8 @@
         --bgDark: #141313;
         --darkErrorDark: #5D1F1F;
         --darkErrorLight: #743434;
+        --lightErrorDark: #FF7474;
+        --lightErrorLight: #EB9E9E;
         --maxerroropacity: 0.9;
       }
 }

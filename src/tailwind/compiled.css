@@ -430,6 +430,8 @@ Ensure the default browser behavior of the `hidden` attribute.
   --bgDark: #141313;
   --darkErrorDark: #5D1F1F;
   --darkErrorLight: #743434;
+  --lightErrorDark: #FF7474;
+  --lightErrorLight: #EB9E9E;
   --maxerroropacity: 0.9;
 }
 
@@ -540,10 +542,6 @@ Ensure the default browser behavior of the `hidden` attribute.
 
 .m-auto {
   margin: auto;
-}
-
-.m-2 {
-  margin: 0.5rem;
 }
 
 .mx-auto {
@@ -767,8 +765,12 @@ Ensure the default browser behavior of the `hidden` attribute.
   background-color: var(--darkErrorDark);
 }
 
-.bg-darkErrorLight {
-  background-color: var(--darkErrorLight);
+.bg-lightErrorDark {
+  background-color: var(--lightErrorDark);
+}
+
+.bg-lightErrorLight {
+  background-color: var(--lightErrorLight);
 }
 
 .p-4 {
@@ -882,6 +884,10 @@ Ensure the default browser behavior of the `hidden` attribute.
   color: rgb(255 255 255 / 0.3);
 }
 
+.text-\[\#fff\]\/90 {
+  color: rgb(255 255 255 / 0.9);
+}
+
 .shadow-xl {
   --tw-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
   --tw-shadow-colored: 0 20px 25px -5px var(--tw-shadow-color), 0 8px 10px -6px var(--tw-shadow-color);
@@ -940,12 +946,32 @@ Ensure the default browser behavior of the `hidden` attribute.
   background-color: var(--bgDark);
 }
 
+.dark .dark\:bg-darkErrorDark {
+  background-color: var(--darkErrorDark);
+}
+
+.dark .dark\:bg-darkErrorLight {
+  background-color: var(--darkErrorLight);
+}
+
 .dark .dark\:text-bgDark {
   color: var(--bgDark);
 }
 
 .dark .dark\:text-snow {
   color: var(--snow);
+}
+
+.dark .dark\:text-\[\#fff\]\/30 {
+  color: rgb(255 255 255 / 0.3);
+}
+
+.dark .dark\:text-\[\#000\]\/50 {
+  color: rgb(0 0 0 / 0.5);
+}
+
+.dark .dark\:text-\[\#fff\]\/50 {
+  color: rgb(255 255 255 / 0.5);
 }
 
 @media (min-width: 800px) {
