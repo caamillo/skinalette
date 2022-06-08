@@ -466,7 +466,7 @@ function App() {
                     <div className="text-3xl text-blurple font-radiocanada font-semibold">Skinalette</div>
                     <div className="flex space-x-6 text-blurple font-radiocanada md:justify-end">
                         <a className="hidden md:block hover:text-lightblurple selected" href="#">Home</a>
-                        <a className="hover:text-lightblurple" href="#">About</a>
+                        <a className="hover:text-lightblurple" href="https://github.com/Diasky/skinalette">About</a>
                     </div>
                 </div>
             </nav>
