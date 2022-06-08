@@ -1,5 +1,6 @@
 ## What is Skinalette?
 ![React](https://img.shields.io/badge/react-%2320232a.svg?style=for-the-badge&logo=react&logoColor=%2361DAFB) ![TailwindCSS](https://img.shields.io/badge/tailwindcss-%2338B2AC.svg?style=for-the-badge&logo=tailwind-css&logoColor=white)
+
 Skinalette is a very small project developed for a very stupid need: the palette changer for skin in [Minecraft](https://www.minecraft.net/ "Minecraft"). Think it, it is really weird that in 10+ years nobody has ever thought of a tool for this stupid, but in some cases (like mine) need. So here is my solution to this stupid problem:
 
 I built that using some modern technologies such as: **React**, **Tailwind** and for the rendering part I used the [skinview3d](https://github.com/bs-community/skinview3d "skinview3d") package that interfaces with [Three.js](https://threejs.org/ "Three.js") library.
